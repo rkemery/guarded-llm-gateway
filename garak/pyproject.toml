@@ -1,0 +1,26 @@
+# A separate uv project for the garak scanner, so its large dependency tree
+# never enters the gateway's environment.
+#
+# garak 0.17.0 declares litellm as a hard dependency. LiteLLM's PyPI releases
+# were compromised in March 2026 and none of these portfolio repos installs it,
+# so the override below removes it from resolution. garak imports litellm only
+# in its litellm generator, which this scan does not use.
+[project]
+name = "gateway-garak-scan"
+version = "0.1.0"
+requires-python = ">=3.11,<3.13"
+# torch is listed so the CPU index source applies (uv sources only cover direct dependencies).
+# jsonschema is imported by garak.payloads but only arrives through litellm, so it is listed here.
+dependencies = ["garak==0.17.0", "torch>=2.14.0", "jsonschema>=4.25.1"]
+
+[tool.uv]
+package = false
+override-dependencies = ["litellm; sys_platform == 'never'"]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
