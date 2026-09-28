@@ -1,7 +1,7 @@
 """Vendor and verify the pinned Tallowbrook dataset snapshot in data/tallowbrook/.
 
-    uv run python scripts/sync_data.py                              # verify against MANIFEST.json
-    uv run python scripts/sync_data.py --from ../neobank-support-data  # copy, then rewrite the manifest
+    uv run python scripts/sync_data.py              # verify against MANIFEST.json
+    uv run python scripts/sync_data.py --from DIR   # copy from a checkout, rewrite the manifest
 
 Copy mode refuses a source checkout that is not at the pinned commit or has
 uncommitted changes to the vendored files, so the manifest always names the
@@ -49,7 +49,8 @@ def verify(dest: Path = DEST) -> list[str]:
         elif sha256(path) != entry["sha256"]:
             problems.append(f"sha256 mismatch for {entry['path']}")
     if manifest.get("source_commit") != PINNED_COMMIT:
-        problems.append(f"manifest names commit {manifest.get('source_commit')}, not {PINNED_COMMIT}")
+        named = manifest.get("source_commit")
+        problems.append(f"manifest names commit {named}, not {PINNED_COMMIT}")
     if problems:
         raise SyncError("; ".join(problems))
     return sorted(entry["path"] for entry in manifest["files"])
