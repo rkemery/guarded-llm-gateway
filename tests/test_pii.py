@@ -92,3 +92,15 @@ def test_presidio_redacts_names_but_not_brand_words(presidio: PresidioPii) -> No
     assert "4111" not in redacted
     assert "Tallowbrook Plus" in redacted
     assert "France" in redacted  # LOCATION is not redacted on purpose
+
+
+def test_merge_is_independent_of_input_order() -> None:
+    import itertools
+
+    spans = [
+        PiiSpan("US_SSN", 5, 14, 0.05),
+        PiiSpan("US_BANK_NUMBER", 5, 14, 0.05),
+        PiiSpan("PERSON", 20, 25, 0.85),
+    ]
+    results = {tuple(merge_spans(list(p))) for p in itertools.permutations(spans)}
+    assert len(results) == 1

@@ -85,6 +85,20 @@ def detector_tables(summary: dict[str, Any]) -> str:
         "| Azure Prompt Shields | not run (needs a Content Safety resource) | not run | not run |"
     )
     lines.append("")
+    dev = summary.get("dev_tpr", {})
+    chosen = summary.get("profile")
+    if chosen and dev:
+        names = {"piguard": "PIGuard alone", "deberta": "deberta alone", "combined": "both, OR"}
+        parts = ", ".join(
+            f"{names[p]} {v['prompt'] * 100:.1f}% of prompts and {v['document'] * 100:.1f}% of "
+            "documents"
+            for p, v in dev.items()
+        )
+        lines += [
+            f"The gateway runs **{names[chosen]}**, the profile with the best mean TPR on the dev "
+            f"split at the same 1% FPR (dev TPR: {parts}).",
+            "",
+        ]
     lines.append(
         f"n: direct injections {_n(first.get('attack:direct_injection'))}, indirect "
         f"{_n(first.get('attack:indirect'))}, JBB {_n(first.get('attack:jbb_harmful'))}."

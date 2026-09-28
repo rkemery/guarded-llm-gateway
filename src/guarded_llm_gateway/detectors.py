@@ -157,8 +157,8 @@ class HFClassifier:
                 mask = torch.tensor([[1] * len(s) + [0] * (width - len(s)) for s in seqs])
                 with torch.inference_mode():
                     logits = model(input_ids=input_ids, attention_mask=mask).logits
-                # float64 keeps scores distinct up to a logit margin of about 36, where
-                # float32 would round many of them to exactly 1.0 and tie the ranking.
+                # float64 keeps scores distinct up to a logit margin of about 36. float32
+                # rounds to exactly 1.0 past about 17, which would tie the top of the ranking.
                 probs = torch.softmax(logits.double(), dim=-1)[:, positive].tolist()
                 for j, p in zip(batch, probs, strict=True):
                     chunk_scores[j] = float(p)

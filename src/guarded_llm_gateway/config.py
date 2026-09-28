@@ -12,6 +12,7 @@ import secrets
 from collections.abc import Mapping
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 from guarded_llm_gateway.paths import RESULTS_DIR
 
@@ -59,12 +60,37 @@ def _csv(env: Mapping[str, str], name: str, default: tuple[str, ...]) -> tuple[s
     return tuple(part.strip() for part in raw.split(",") if part.strip())
 
 
-def load_thresholds(path: Path = THRESHOLDS_FILE) -> dict[str, dict[str, float]]:
-    """Detector thresholds tuned on the dev split: {"prompt": {name: t}, "document": {...}}."""
+DEFAULT_DETECTORS = ("piguard",)
+
+
+def load_thresholds(
+    path: Path = THRESHOLDS_FILE, detectors: tuple[str, ...] | None = None
+) -> dict[str, Any]:
+    """The detector profile and thresholds tuned on the dev split.
+
+    Returns {"detectors": [...], "prompt": {name: t}, "document": {name: t}}. By
+    default this is the profile chosen on dev. Passing `detectors` picks the tuned
+    profile for that set instead (one detector alone, or all of them ORed). Without
+    the file, detectors run at the vendors' 0.5 threshold.
+    """
+    chosen = list(DEFAULT_DETECTORS if detectors is None else detectors)
     if not path.exists():
-        return {"prompt": {}, "document": {}}
+        return {"detectors": chosen, "prompt": {}, "document": {}}
     data = json.loads(path.read_text(encoding="utf-8"))
-    return {"prompt": dict(data.get("prompt", {})), "document": dict(data.get("document", {}))}
+    if detectors is None:
+        return {
+            "detectors": list(data.get("detectors", DEFAULT_DETECTORS)),
+            "prompt": dict(data.get("prompt", {})),
+            "document": dict(data.get("document", {})),
+        }
+    for profile in data.get("profiles", {}).values():
+        if sorted(profile["detectors"]) == sorted(detectors):
+            return {
+                "detectors": chosen,
+                "prompt": profile["prompt"],
+                "document": profile["document"],
+            }
+    return {"detectors": chosen, "prompt": {}, "document": {}}
 
 
 @dataclass(frozen=True)
@@ -72,7 +98,7 @@ class Settings:
     backend: str = "fake"  # "fake" (offline) or "azure"
     primary_model: str = "gpt-6-luna"
     fallback_model: str = "gpt-5-mini"
-    detectors: tuple[str, ...] = ("piguard", "deberta")
+    detectors: tuple[str, ...] = DEFAULT_DETECTORS
     prompt_thresholds: dict[str, float] = field(default_factory=dict)
     document_thresholds: dict[str, float] = field(default_factory=dict)
     max_input_chars: int = 4000
@@ -108,11 +134,14 @@ class Settings:
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None) -> Settings:
         env = os.environ if env is None else env
-        thresholds = load_thresholds()
+        requested = env.get("GATEWAY_DETECTORS")
+        thresholds = load_thresholds(
+            detectors=None if requested is None else _csv(env, "GATEWAY_DETECTORS", ())
+        )
         backend = env.get("GATEWAY_BACKEND", "fake")
         if backend not in {"fake", "azure"}:
             raise ConfigError(f"GATEWAY_BACKEND must be 'fake' or 'azure', got {backend!r}")
-        detectors = _csv(env, "GATEWAY_DETECTORS", ("piguard", "deberta"))
+        detectors = _csv(env, "GATEWAY_DETECTORS", tuple(thresholds["detectors"]))
         unknown = set(detectors) - {"piguard", "deberta"}
         if unknown:
             raise ConfigError(f"unknown detectors in GATEWAY_DETECTORS: {sorted(unknown)}")

@@ -159,7 +159,7 @@ def build_gateway(settings: Settings, client: Any) -> Gateway:
         models=slots,
         pii=PresidioPii(),
         detectors=[
-            HFClassifier(n, torch_threads=settings.torch_threads) for n in ("piguard", "deberta")
+            HFClassifier(n, torch_threads=settings.torch_threads) for n in settings.detectors
         ],
     )
 

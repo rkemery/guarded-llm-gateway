@@ -141,8 +141,13 @@ def find_regex_pii(text: str) -> list[PiiSpan]:
 
 
 def merge_spans(spans: Iterable[PiiSpan]) -> list[PiiSpan]:
-    """Resolve overlaps: keep the higher-scoring span, then the longer, then the earlier."""
-    ordered = sorted(spans, key=lambda s: (-s.score, -(s.end - s.start), s.start))
+    """Resolve overlaps: keep the higher-scoring span, then the longer, then the earlier.
+
+    The entity name breaks the remaining ties. Presidio returns equal-score results
+    in an order that depends on Python's hash seed, so without it the same text can
+    redact differently from one process to the next.
+    """
+    ordered = sorted(spans, key=lambda s: (-s.score, -(s.end - s.start), s.start, s.entity))
     kept: list[PiiSpan] = []
     for span in ordered:
         if all(span.end <= k.start or span.start >= k.end for k in kept):

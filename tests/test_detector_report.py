@@ -95,3 +95,41 @@ def test_rate_needs_values() -> None:
 
     with pytest.raises(ValueError, match="n must be positive"):
         rate([])
+
+
+def test_profile_selection_uses_dev_only_and_config_reads_it(tmp_path) -> None:
+    import json
+
+    from guarded_llm_gateway.config import load_thresholds
+    from guarded_llm_gateway.eval.detector_report import dev_tpr, profiles
+
+    items = _items()
+    tuned = tune(items)
+    candidates = profiles(tuned)
+    assert set(candidates) == {"piguard", "deberta", "combined"}
+    assert (
+        dev_tpr(items, candidates["piguard"])["prompt"]
+        > dev_tpr(items, candidates["deberta"])["prompt"]
+    )
+
+    path = tmp_path / "thresholds.json"
+    path.write_text(
+        json.dumps(
+            {
+                "detectors": ["piguard"],
+                "prompt": {"piguard": 0.7},
+                "document": {"piguard": 0.6},
+                "profiles": {
+                    "combined": {
+                        "detectors": ["piguard", "deberta"],
+                        "prompt": {"piguard": 0.9, "deberta": 0.99},
+                        "document": {"piguard": 0.8, "deberta": 0.98},
+                    }
+                },
+            }
+        )
+    )
+    assert load_thresholds(path)["prompt"] == {"piguard": 0.7}
+    both = load_thresholds(path, ("deberta", "piguard"))
+    assert both["prompt"] == {"piguard": 0.9, "deberta": 0.99}
+    assert load_thresholds(path, ())["detectors"] == []

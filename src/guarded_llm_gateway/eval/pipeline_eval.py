@@ -70,7 +70,7 @@ def _gateway(settings: Settings, torch_threads: int, doc_cache_size: int) -> Gat
         index=BM25Index(current_articles(load_articles())),
         models=[ModelSlot("fake", FakeModel(), CircuitBreaker("fake"))],
         pii=PresidioPii(),
-        detectors=[HFClassifier(n, torch_threads=torch_threads) for n in ("piguard", "deberta")],
+        detectors=[HFClassifier(n, torch_threads=torch_threads) for n in settings.detectors],
         doc_cache_size=doc_cache_size,
     )
     for d in gateway.detectors:
@@ -98,10 +98,11 @@ async def run_async(torch_threads: int = 4) -> dict[str, Any]:
             index = BM25Index(swapped)
         result = await gateway.handle(item["text"], index=index)
         records.append(_record(item, result, "suite"))
-    cold = _gateway(settings, torch_threads, doc_cache_size=0)
+    # Latency pass: same models, document cache off so every article is scored cold.
+    gateway.doc_cache_size = 0
     questions = [b for b in load_benign() if b["set"] == "tallowbrook_rag" and b["split"] == "test"]
     for item in random.Random(SEED).sample(questions, LATENCY_SAMPLE):
-        result = await cold.handle(item["text"])
+        result = await gateway.handle(item["text"])
         records.append(_record(item, result, "latency"))
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     write_records(OUT_DIR / "offline.jsonl", records)

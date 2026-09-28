@@ -193,18 +193,58 @@ def evaluate(
     return out
 
 
+def profiles(tuned: dict[str, Any], names: Sequence[str] = DETECTORS) -> dict[str, Any]:
+    """Candidate gateway profiles: each detector alone, and all of them ORed."""
+    kinds = [k for k in KINDS if k in tuned]
+    out: dict[str, Any] = {
+        n: {"detectors": [n], **{k: {n: tuned[k]["individual"][n]} for k in kinds}} for n in names
+    }
+    out["combined"] = {"detectors": list(names), **{k: tuned[k]["combined"] for k in kinds}}
+    return out
+
+
+def dev_tpr(items: Sequence[Item], profile: dict[str, Any]) -> dict[str, float]:
+    """TPR of a profile on dev injection attacks, per kind. Used to pick the gateway profile."""
+    out = {}
+    for kind in (k for k in KINDS if k in profile):
+        attacks = [
+            i
+            for i in items
+            if i.get("split") == "dev"
+            and i.label == 1
+            and i.get("kind") == kind
+            and i.get("category") == "injection"
+            and i.get("transform") != "zero_width_unnormalized"
+        ]
+        if attacks:
+            flag = _flagger(profile["detectors"], profile[kind])
+            out[kind] = sum(flag(i) for i in attacks) / len(attacks)
+    return out
+
+
 def run(scores_dir: Path = SCORES_DIR, thresholds_file: Path = THRESHOLDS_FILE) -> dict[str, Any]:
     items = load_items(scores_dir=scores_dir)
     tuned = tune(items)
+    candidates = profiles(tuned)
+    selection = {name: dev_tpr(items, p) for name, p in candidates.items()}
+    chosen = max(selection, key=lambda name: sum(selection[name].values()) / len(selection[name]))
     gateway_thresholds = {
-        "note": "Tuned on the dev split for <= 1% FPR on dev benign items. The gateway ORs the "
-        "combined thresholds.",
+        "note": "Thresholds for <= 1% FPR on dev benign items. The profile with the best mean dev "
+        "TPR over prompts and documents is the gateway default. Test data played no part.",
         "target_fpr": TARGET_FPR,
-        "prompt": tuned["prompt"]["combined"],
-        "document": tuned["document"]["combined"],
-        "individual": {k: tuned[k]["individual"] for k in KINDS},
+        "profile": chosen,
+        "detectors": candidates[chosen]["detectors"],
+        "prompt": candidates[chosen]["prompt"],
+        "document": candidates[chosen]["document"],
+        "dev_tpr": selection,
+        "profiles": candidates,
     }
     thresholds_file.write_text(json.dumps(gateway_thresholds, indent=2) + "\n", encoding="utf-8")
-    summary = {"tuned": tuned, "test": evaluate(items, tuned)}
+    summary = {
+        "tuned": tuned,
+        "profile": chosen,
+        "dev_tpr": selection,
+        "test": evaluate(items, tuned),
+    }
     (scores_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     return summary
