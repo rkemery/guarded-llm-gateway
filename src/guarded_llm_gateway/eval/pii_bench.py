@@ -28,7 +28,15 @@ from llm_eval_harness.stats import wilson_interval, wilson_interval_clustered
 
 from guarded_llm_gateway.eval.sources import fetch
 from guarded_llm_gateway.paths import RESULTS_DIR
-from guarded_llm_gateway.pii import REDACT_ENTITIES, PiiSpan, PresidioPii, find_regex_pii
+from guarded_llm_gateway.pii import (
+    REDACT_ENTITIES,
+    PiiSpan,
+    PresidioPii,
+    find_regex_pii,
+    iban_valid,
+    luhn_valid,
+    ssn_valid,
+)
 
 OUT_DIR = RESULTS_DIR / "pii"
 SEED = 20260928
@@ -107,7 +115,18 @@ def _overlaps(a: tuple[int, int], b: tuple[int, int]) -> bool:
     return a[0] < b[1] and b[0] < a[1]
 
 
-def match_counts(gold: Sequence[tuple[str, int, int]], pred: Sequence[PiiSpan]) -> dict[str, float]:
+# Real card numbers, IBANs and SSNs pass these checks. Many synthetic ones in the
+# datasets do not, so recall is also reported on the gold spans that pass.
+CHECKSUMS: dict[str, Callable[[str], bool]] = {
+    "CREDIT_CARD": luhn_valid,
+    "IBAN": iban_valid,
+    "SSN": ssn_valid,
+}
+
+
+def match_counts(
+    gold: Sequence[tuple[str, int, int]], pred: Sequence[PiiSpan], text: str = ""
+) -> dict[str, float]:
     """Per category: gold spans, gold spans found, predicted spans, predicted spans correct."""
     predicted = [(PRED_MAP[p.entity], p.start, p.end) for p in pred if p.entity in PRED_MAP]
     counts: dict[str, float] = {}
@@ -118,6 +137,11 @@ def match_counts(gold: Sequence[tuple[str, int, int]], pred: Sequence[PiiSpan]) 
         counts[f"{cat}:found"] = sum(any(_overlaps(x, y) for y in p) for x in g)
         counts[f"{cat}:pred"] = len(p)
         counts[f"{cat}:correct"] = sum(any(_overlaps(y, x) for x in g) for y in p)
+        check = CHECKSUMS.get(cat)
+        if check is not None and text:
+            valid = [x for x in g if check(text[x[0] : x[1]])]
+            counts[f"{cat}:gold_valid"] = len(valid)
+            counts[f"{cat}:found_valid"] = sum(any(_overlaps(x, y) for y in p) for x in valid)
     return counts
 
 
@@ -146,7 +170,7 @@ def run(out_dir: Path = OUT_DIR) -> dict[str, Any]:
                     item_id=doc["doc_id"],
                     config=name,
                     model=model,
-                    scores=match_counts(doc["gold"], pred),
+                    scores=match_counts(doc["gold"], pred, doc["text"]),
                     cluster=doc["doc_id"],
                     latency_ms=ms,
                     meta={"dataset": doc["dataset"], "chars": len(doc["text"])},
@@ -199,6 +223,16 @@ def summarize(out_dir: Path = OUT_DIR) -> dict[str, Any]:
                     for r in recs
                 ]
                 cells[cat] = {"recall": _rate(recall), "precision": _rate(precision)}
+                if f"{cat}:gold_valid" in recs[0].scores:
+                    valid = [
+                        (
+                            r.item_id,
+                            int(r.scores[f"{cat}:found_valid"]),
+                            int(r.scores[f"{cat}:gold_valid"]),
+                        )
+                        for r in recs
+                    ]
+                    cells[cat]["recall_checksum_valid"] = _rate(valid)
             summary[name][dataset] = {"docs": len(recs), "entities": cells}
     (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
     return summary
