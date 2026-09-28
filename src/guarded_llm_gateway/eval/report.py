@@ -282,6 +282,9 @@ def pii_table(summary: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
+FAULT_OUTCOMES = ("primary", "fallback", "retrieval_only", "503")
+
+
 def faults_table(summary: dict[str, Any]) -> str:
     lines = [
         "**Fallback under injected faults** (200 RAG questions per scenario, offline, "
@@ -292,13 +295,12 @@ def faults_table(summary: dict[str, Any]) -> str:
         sep(6),
     ]
     for name, cell in summary.items():
+        # Outcome cells hold k and the CI; n lives on the scenario.
+        n = cell["n"]
         lines.append(
             row(
                 name,
-                pct(cell["primary"]),
-                pct(cell["fallback"]),
-                pct(cell["retrieval_only"]),
-                pct(cell["503"]),
+                *(pct({**cell[k], "n": n}) for k in FAULT_OUTCOMES),
                 f"{cell['model_calls_per_request']:.2f}",
             )
         )

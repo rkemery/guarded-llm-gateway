@@ -111,3 +111,22 @@ def test_e2e_runner_records_and_summary(make_gateway, tmp_path) -> None:
     assert summary["full"]["attack:all"]["pii_leak_contact"]["rate"] == 0.0
     assert summary["full"]["errors"] == 0
     assert (tmp_path / "full.jsonl").exists()
+
+
+def test_faults_table_shows_rates_not_na():
+    from guarded_llm_gateway.eval.report import faults_table
+
+    ci = {"k": 13, "rate": 0.065, "low": 0.038, "high": 0.108}
+    summary = {
+        "primary 30% errors": {
+            "n": 200,
+            "model_calls_per_request": 1.34,
+            "primary": ci,
+            "fallback": ci,
+            "retrieval_only": ci,
+            "503": ci,
+        }
+    }
+    table = faults_table(summary)
+    assert "n/a" not in table
+    assert "6.5% (3.8 to 10.8)" in table
