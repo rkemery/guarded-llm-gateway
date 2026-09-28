@@ -1,0 +1,16 @@
+{
+  "JailbreakBench/JBB-Behaviors@886acc352a31533ffbcf4ef22c744658688086fc/data/harmful-behaviors.csv": "4a8ec6832056b631eb092dccc60d37a61c3d441268268888b3d006288afeffa1",
+  "Lakera/gandalf_ignore_instructions@04737b65e90a6794ec227012e4a255a7def6344b/data/test-00000-of-00001-bc92128b9288a6d1.parquet": "56b646d133335ebc535266bd55dbe1b5bee7caa4b95bf49d040684b9b5dd9972",
+  "Lakera/gandalf_ignore_instructions@04737b65e90a6794ec227012e4a255a7def6344b/data/train-00000-of-00001-ded53be747ff55cd.parquet": "5b6acf3e5a5998d21f8e1222bb45bbdec25a14408747b1cd63bebef4a75fa439",
+  "Lakera/gandalf_ignore_instructions@04737b65e90a6794ec227012e4a255a7def6344b/data/validation-00000-of-00001-94481a2a09ff2fff.parquet": "f51ab3e3407a368845b0f57932cc745c09280429416d7507bd178a16326a79f6",
+  "deepset/prompt-injections@4f61ecb038e9c3fb77e21034b22511b523772cdd/data/test-00000-of-00001-701d16158af87368.parquet": "39ac797cabc157eeed58435a08593b2952bb6cb16fc394a2d383f447cc7b246e",
+  "deepset/prompt-injections@4f61ecb038e9c3fb77e21034b22511b523772cdd/data/train-00000-of-00001-9564e8b05b4757ab.parquet": "2e10bc7ab30f542c97e4e83e2a5683000b5057d25ec10908784c631d44124c04",
+  "gretelai/synthetic_pii_finance_multilingual@7b844d16738527a04264f50214cb426a4cea0897/data/test-00000-of-00001.parquet": "014e1057978f030fce4f4cad7c93b9e3377fd0ded713d2bf4c7de00e3e3c8c72",
+  "legacy-datasets/banking77@f54121560de48f2852f90be299010d1d6dc612ec/data/test-00000-of-00001.parquet": "318da70fb77a0e01bcfaecc97ef6e3645313aab98c429f0f0630c9d48e703ecc",
+  "leolee99/NotInject@847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_one-00000-of-00001.parquet": "5b1d3a8ec341205305efd8c6d2cabeb5ba0f594dd8726b08ee7fde1a46ddc6ec",
+  "leolee99/NotInject@847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_three-00000-of-00001.parquet": "d5c685b123570c092a0f374ba6bdf324b2026d905a2751a243eb2bb360d411a8",
+  "leolee99/NotInject@847ae76cf8fea5ed325429e569ae8cfef022d2e0/data/NotInject_two-00000-of-00001.parquet": "a5a8c1b3b851b0b5acc3b6caf8bfee26d7da631b2967dd31ca90358df8883feb",
+  "microsoft/llmail-inject-challenge@1063bdf01ec8762b812d5e06ee768a06faa5a6f7/data/emails_for_fp_tests.json": "4ddd950b5dbaa8548f5597c886d8e09a051ba07f80a9291fdcca9c2397d22abe",
+  "microsoft/llmail-inject-challenge@1063bdf01ec8762b812d5e06ee768a06faa5a6f7/data/raw_submissions_phase2.jsonl": "a9207e1d893ccb74ca6f9cc5eecea433bc49c23a26bed88088afd385c7ab18b6",
+  "nvidia/Nemotron-PII@b70ffaf5ff39e079776134c5bf4381f00a9fd1ed/data/test-00000-of-00001.parquet": "1a4b0512ecb5370f0992d29d0f9c07351e6de13f0d7ea33bb18cecb984780247"
+}
