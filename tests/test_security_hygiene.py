@@ -54,3 +54,18 @@ def test_canary_is_random_per_process_unless_set() -> None:
     assert Settings.from_env({"GATEWAY_CANARY": "TB-CANARY-fixed00000000"}).canary.endswith(
         "fixed00000000"
     )
+
+
+def test_owasp_table_lists_only_rows_with_existing_tests() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    section = readme.split("### OWASP Top 10 for LLM Applications (2026)", 1)[1].split("\n## ", 1)[
+        0
+    ]
+    rows = [line for line in section.splitlines() if line.startswith("| LLM")]
+    assert rows
+    for line in rows:
+        assert re.match(r"\| LLM(0[1-9]|10):2026 ", line), line
+        files = re.findall(r"`(tests/[a-z_]+\.py)`", line)
+        assert files, f"row without a test file: {line}"
+        for name in files:
+            assert (ROOT / name).exists(), name

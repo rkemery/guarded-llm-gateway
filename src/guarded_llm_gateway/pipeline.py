@@ -22,6 +22,7 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
+import httpx
 import stamina
 from llm_eval_harness import ModelRequest, ModelResponse
 from llm_eval_harness.client import DEFAULT_PRICES, cost_usd
@@ -34,7 +35,7 @@ from guarded_llm_gateway.backends import (
 )
 from guarded_llm_gateway.config import Settings
 from guarded_llm_gateway.corpus import Article, BM25Index
-from guarded_llm_gateway.detectors import Detector, PromptShields
+from guarded_llm_gateway.detectors import Detector, PromptShields, PromptShieldsError
 from guarded_llm_gateway.metrics import GatewayMetrics
 from guarded_llm_gateway.output_rules import SchemaError, apply_output_rules, parse_answer
 from guarded_llm_gateway.pii import PresidioPii, redact
@@ -514,12 +515,23 @@ class Gateway:
                     result.scores[f"doc:{name}:{hits[i].article_id}"] = score
                     flagged[i] |= score >= self._threshold("document", name)
         if self.shields is not None:
-            shield = await self.shields.analyze(prompt, texts)
-            if shield.prompt_attack:
-                timer.add("document_detector", "block", started, "prompt_shields prompt attack")
-                result.blocked_by = "prompt_shields"
-                return hits
-            flagged = [f or s for f, s in zip(flagged, shield.document_attacks, strict=True)]
+            try:
+                shield = await self.shields.analyze(prompt, texts)
+            except (PromptShieldsError, httpx.HTTPError) as exc:
+                # Fail open: the local detectors already ran, and an outage of an
+                # optional third-party service should not take the assistant down.
+                self.metrics.model_errors.labels("prompt_shields", type(exc).__name__).inc()
+                result.layers.append(
+                    LayerEvent(
+                        layer="prompt_shields", action="error", latency_ms=0.0, detail=str(exc)
+                    )
+                )
+            else:
+                if shield.prompt_attack:
+                    timer.add("document_detector", "block", started, "prompt_shields prompt attack")
+                    result.blocked_by = "prompt_shields"
+                    return hits
+                flagged = [f or s for f, s in zip(flagged, shield.document_attacks, strict=True)]
         kept = [a for a, f in zip(hits, flagged, strict=True) if not f]
         result.dropped_ids = [a.article_id for a, f in zip(hits, flagged, strict=True) if f]
         self.metrics.docs_dropped.inc(len(result.dropped_ids))

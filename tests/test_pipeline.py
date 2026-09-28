@@ -250,3 +250,39 @@ def test_concurrent_requests_do_not_interfere(make_gateway) -> None:
         return [r.status for r in results]
 
     assert run(many()) == ["answered"] * 10
+
+
+def _shields(handler):
+    import httpx
+
+    from guarded_llm_gateway.detectors import PromptShields
+
+    return PromptShields(
+        "https://cs.example", "k", client=httpx.AsyncClient(transport=httpx.MockTransport(handler))
+    )
+
+
+def test_prompt_shields_can_block_and_drop_documents(make_gateway) -> None:
+    import httpx
+
+    def handler(request):
+        body = json.loads(request.content)
+        docs = [{"attackDetected": i == 0} for i, _ in enumerate(body["documents"])]
+        attack = "shieldme" in body["userPrompt"]
+        return httpx.Response(
+            200, json={"userPromptAnalysis": {"attackDetected": attack}, "documentsAnalysis": docs}
+        )
+
+    gateway = make_gateway(shields=_shields(handler))
+    result = run(gateway.handle("How do I freeze my card?"))
+    assert result.dropped_ids == result.retrieved_ids[:1]
+    assert run(gateway.handle("How do I freeze my card? shieldme")).blocked_by == "prompt_shields"
+
+
+def test_prompt_shields_outage_fails_open(make_gateway) -> None:
+    import httpx
+
+    gateway = make_gateway(shields=_shields(lambda request: httpx.Response(503, json={})))
+    result = run(gateway.handle("How do I freeze my card?"))
+    assert result.status == "answered"
+    assert ("prompt_shields", "error") in layers(result)
