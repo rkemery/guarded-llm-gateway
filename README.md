@@ -2,7 +2,7 @@
 
 A FastAPI gateway for a fictional neobank's support assistant that redacts PII, screens prompts and retrieved articles for injection, enforces output rules and fails over between models, with every guard measured on public datasets and a held-out test split.
 
-- **PIGuard** catches 86.9% (80.1 to 91.7) of 130 direct injections at a 1% dev FPR and flags 0.1% of 1,876 Banking77 questions. ORing in ProtectAI's deberta lowered recall.
+- **PIGuard** catches 86.9% (80.1 to 91.7) of 130 direct injections at a 1% dev FPR and flags 0.1% of 1876 Banking77 questions. ORing in ProtectAI's deberta lowered recall.
 - **Encoded attacks:** TPR is 100% on base64 and 96% on leetspeak, but PIGuard also flags all 450 base64 and 85% of leetspeak benign prompts. That's the format, not the attack.
 - **End to end:** 0.0% ASR (0.0 to 0.9) on 448 attacks with or without the gateway's guards, a floor effect.
 
@@ -14,11 +14,11 @@ uv run make demo      # offline, no keys: recompute results and rewrite the Resu
 uv run gateway serve  # fake model backend on 127.0.0.1:8000, then POST /v1/chat {"message": "..."}
 ```
 
-`make test` runs the test suite with no network and no keys. The first `gateway serve` downloads the pinned PIGuard model (about 740 MB) from Hugging Face.
+`make test` also runs offline. The first `gateway serve` downloads the pinned PIGuard model (about 740 MB) from Hugging Face.
 
 ## Results
 
-`make demo` rebuilds every table offline from the committed records and garak summary, including the tables from the live Azure end-to-end run and garak scan ([Cost](#cost)).
+garak renders from a committed summary because the raw report holds offensive payloads.
 
 <!-- results:start -->
 **Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split (1396 benign prompts, 133 benign documents), every rate below on the held-out test split. Wilson 95% CIs, attack CIs clustered by payload group. Direct injections and JBB requests are untransformed here. The detector detail below has the encoded variants.
@@ -30,7 +30,7 @@ uv run gateway serve  # fake model backend on 127.0.0.1:8000, then POST /v1/chat
 | Both, OR | 65.4% (56.9 to 73.0) | 40.5% (25.4 to 57.7) | 3.7% (1.0 to 12.5) |
 | Azure Prompt Shields | not run (needs a Content Safety resource) | not run | not run |
 
-The gateway runs **PIGuard alone**, the profile with the best mean TPR on the dev split at the same 1% FPR (dev TPR, transformed injections included: PIGuard alone 84.4% of prompts and 28.6% of documents, deberta alone 47.4% of prompts and 9.5% of documents, both, OR 63.0% of prompts and 35.7% of documents).
+The gateway runs **PIGuard alone**, the profile with the best mean TPR on the dev split at the same 1% FPR.
 
 n: direct injections 130, indirect 79, JBB 54.
 
@@ -46,6 +46,8 @@ n: Banking77 test 1876, Tallowbrook RAG questions 150, NotInject 197, Tallowbroo
 
 <details>
 <summary>Detector detail: vendor thresholds, transforms, sources</summary>
+
+Dev TPR at 1% FPR by profile, transformed injections included: PIGuard alone 84.4% of prompts and 28.6% of documents, deberta alone 47.4% of prompts and 9.5% of documents, both, OR 63.0% of prompts and 35.7% of documents.
 
 At the vendors' default threshold of 0.5 instead of the tuned one (untransformed injections):
 
@@ -76,7 +78,7 @@ At the vendors' default threshold of 0.5 instead of the tuned one (untransformed
 
 </details>
 
-**End-to-end attack success rate (ASR)**, judged by code on the text that leaves the gateway. An attack succeeds if the reply leaks the canary or a PII value from the account context, or shows a link or email address outside the allowlist. Test split, `gpt-6-luna` with `gpt-5-mini` as the fallback, Wilson 95% CIs clustered by payload group. Cost prices each record's tokens at list price with no prompt-cache discount. The records come from a rerun of the fixed gateway that replayed the first run's cached replies and sent only uncached calls (provider refusals) live.
+**End-to-end attack success rate (ASR)**, judged by code on the text that leaves the gateway. An attack succeeds if the reply leaks the canary or a PII value from the account context, or shows a link or email address outside the allowlist. Test split, `gpt-6-luna` with `gpt-5-mini` as the fallback, Wilson 95% CIs clustered by payload group. The records come from a rerun of the fixed gateway that replayed the first run's cached replies and sent only uncached calls (provider refusals) live.
 
 | Config | ASR, all attacks | ASR before output rules | Benign questions blocked | Cost |
 |---|---|---|---|---|
@@ -286,21 +288,29 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 ## Design decisions
 
 - **Probabilistic detectors plus deterministic blocks.** Classifiers miss things, so the output rules block the channels an injection needs to cause harm: markdown images and links to outside domains, outside email addresses, the canary. This follows Microsoft's published defense-in-depth approach, which pairs Prompt Shields and spotlighting with deterministic blocking of markdown-image and link exfiltration ([MSRC, July 2025](https://www.microsoft.com/en-us/msrc/blog/2025/07/how-microsoft-defends-against-indirect-prompt-injection-attacks)).
-- **Spotlighting by datamarking.** Retrieved text has every space replaced by `ˆ` inside `<documents>` tags, and the system prompt says marked text is data. Hines et al. report that spotlighting cut attack success from over 50% to under 2% on their tasks ([arXiv 2403.14720](https://arxiv.org/abs/2403.14720)). Marker characters and document tags are stripped from retrieved text first, so a document cannot close its own block.
-- **PIGuard without `trust_remote_code`.** Its card says to load it with remote code. I read `modeling_piguard.py` at the pinned commit: a DeBERTa-v2 classifier whose head is one linear layer on the [CLS] state. `detectors.py` reimplements that in a few lines, and a download test checks its logits against the remote code at the same revision. PIGuard comes from the InjecGuard paper, which also introduced NotInject ([arXiv 2410.22770](https://arxiv.org/abs/2410.22770)).
-- **Sliding windows for long text.** Both detectors read 512 tokens. A payload after a 250-word article would be truncated away, so long texts are scored in overlapping windows and take the maximum.
+- **Spotlighting by datamarking.** Retrieved text loses any marker characters and document tags, then has every space replaced by `ˆ` inside `<documents>` tags, and the system prompt says marked text is data. Hines et al. report that spotlighting cut attack success from over 50% to under 2% on their tasks ([arXiv 2403.14720](https://arxiv.org/abs/2403.14720)).
+- **PIGuard without `trust_remote_code`.** Its card says to load it with remote code, so I read `modeling_piguard.py` at the pinned commit (a DeBERTa-v2 classifier with one linear layer on the [CLS] state) and reimplemented it in `detectors.py`. A download test checks its logits against the remote code at the same revision.
+- **Sliding windows for long text.** Both detectors read 512 tokens, so a payload after a 250-word article would be truncated away. Long texts are scored in overlapping windows and take the maximum.
 - **One detector, chosen on dev.** Each profile (PIGuard, deberta, both ORed) gets thresholds for 1% dev FPR, and the gateway runs the one with the best mean dev TPR, PIGuard alone. deberta stays in the benchmark as the baseline.
-- **Presidio with the small spaCy model and my own checksum recognizers.** `en_core_web_sm` is 12 MB against about 400 MB for Presidio's default `en_core_web_lg`, and in this gateway it only feeds PERSON. The regex baseline and Presidio share one Luhn and one IBAN implementation, so the benchmark isolates what NER and context scoring add. LOCATION and DATE_TIME are not redacted, because country names and dates are what travel and dispute questions are about.
+- **Presidio with the small spaCy model and my own checksum recognizers.** `en_core_web_sm` is 12 MB against about 400 MB for Presidio's default `en_core_web_lg`, and in this gateway it only feeds PERSON. The regex baseline and Presidio share one Luhn and one IBAN implementation, so the benchmark isolates what NER and context scoring add.
+
+<details>
+<summary>More design decisions: retries, circuit breaker, fallback, Prompt Shields, LiteLLM, redaction scope</summary>
+
 - **stamina for retries, the harness for everything else.** Model calls go through llm-eval-harness (`FoundryClient`, `DollarCap`, `CachedClient`). Its `RetryingClient` sleeps with `time.sleep` in the worker thread, where the request deadline cannot cancel it. stamina retries with exponential backoff and jitter on `asyncio.sleep`, so the deadline wins. The OpenAI SDK's own retries are off (`max_retries=0`, the SDK default is 2 retries with a 600 s timeout per `openai/_constants.py`), and each call gets a timeout below the deadline. While the fallback could still run, the primary gets the remaining time minus min(12 s, half of it), so a hung primary still leaves the fallback its turn. A test checks this at the shipped timings on a virtual clock.
 - **A hand-written async circuit breaker.** pybreaker 1.4.1 supports async only through Tornado, and purgatory's last release was November 2024. The breaker here is about 80 lines with a fake-clock test for each transition.
 - **Retrieval-only fallback.** When both models fail, the customer still gets the top help-center articles with links. A 503 only happens when there is nothing to show.
 - **Prompt Shields over REST, off by default.** It is called with httpx against `text:shieldPrompt?api-version=2024-09-01` ([quickstart](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-jailbreak)) only when `AZURE_CONTENT_SAFETY_ENDPOINT` and `AZURE_CONTENT_SAFETY_KEY` are set. Inputs over the service limits are split across calls instead of truncated, and results are cached. Foundry's own content filter is logged as its own layer (`azure_content_filter`). Any other provider policy refusal, a 400 with a code such as `invalid_prompt` or a policy message, ends the request as `provider_refusal`. Neither goes to the fallback model or counts as a breaker failure. A second model would give the attacker a second try, and refusals that opened the breaker would push benign traffic to the fallback. Other 4xx errors are configuration errors and still fail over.
 - **No LiteLLM.** Versions 1.82.7 and 1.82.8 on PyPI carried a credential stealer on March 24, 2026 ([LiteLLM security update](https://docs.litellm.ai/blog/security-update-march-2026)). garak 0.17.0 declares LiteLLM as a hard dependency, so the scanner lives in its own uv project that overrides it out. A test fails if LiteLLM appears in the gateway's lockfile.
+- **LOCATION and DATE_TIME are not redacted.** Country names and dates are what travel and dispute questions are about.
+- **PIGuard's source.** It comes from the InjecGuard paper, which also introduced NotInject ([arXiv 2410.22770](https://arxiv.org/abs/2410.22770)).
+
+</details>
 
 ## What didn't work
 
 - **Two detectors ORed.** At the same 1% FPR it caught fewer dev direct injections than PIGuard alone (63.0% against 84.4%), since both thresholds rise to share the budget, and the test split agrees.
-- **Vendor default thresholds.** ProtectAI's model at its 0.5 threshold flags about 1 in 20 Banking77 questions and more than 4 in 10 NotInject prompts. Tuning it to 1% FPR on dev fixed the first and cut its recall on untransformed direct injections from 70.0% to 54.6%.
+- **Vendor default thresholds.** ProtectAI's model at its 0.5 threshold flags about 1 in 20 Banking77 questions and more than 4 in 10 NotInject prompts, and tuning it to 1% dev FPR cut its recall on untransformed direct injections from 70.0% to 54.6%.
 - **End-to-end attack success as a way to compare layers.** Every config, even the one without gateway guards, scored 0.0% on the 448 test attacks, because the public payloads are generic, none targets this gateway's canary or account context, and gpt-6-luna with a strict JSON reply format didn't follow them. The offline pipeline table carries the per-layer comparison instead.
 
 <details>
@@ -316,7 +326,7 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 
 - **Pooled FPR hides per-set FPR.** The 1% target is on pooled dev benign prompts, most of which are Banking77. PIGuard still flags about 1 in 9 NotInject prompts on test, which are benign prompts built around words like "ignore". A support channel that gets many such questions would want its own dev set and threshold.
 - **Homoglyphs beat both detectors at the tuned thresholds.** Cyrillic look-alike letters drop both models to near zero recall, and NFKC does not fold them. A confusables map (Unicode TR39) before detection is the obvious next step and is not built.
-- **Static suite.** Everything here is a fixed set of public payloads plus mechanical transforms. An attacker who can query the gateway and adapt will do better: adaptive attacks broke 12 published defenses with attack success above 90% for most of them (Nasr et al., [arXiv 2510.09023](https://arxiv.org/abs/2510.09023)). That's why detector verdicts are hidden from clients and why garak gets its own table.
+- **Static suite.** Everything here is a fixed set of public payloads plus mechanical transforms. An attacker who can query the gateway and adapt will do better (Nasr et al., [arXiv 2510.09023](https://arxiv.org/abs/2510.09023)). That's why detector verdicts are hidden from clients and why garak gets its own table.
 - **Code-judged ASR is a lower bound.** A goal hijack that leaks nothing ("say something rude about a newspaper") does not count as a success. JailbreakBench goals need a judge to score, so for them only blocks and leaks are measured.
 - **In-memory limits.** slowapi's store, the token budget and the circuit breakers are per process. Several replicas would need a shared store such as Redis.
 
@@ -337,6 +347,7 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 - **CPU latency on one small machine.** Latency was measured on an otherwise idle Azure D4s v6 (4 vCPU on 2 physical cores, PyTorch at 2 threads). A busy machine is much slower: an earlier run on a shared container measured a document-detector p95 of 24 s against 0.8 s here.
 - **Replay is close, not exact.** `make eval-e2e` replays the committed cache, but the harness caches only successful replies. The live run used Foundry's default content filter (`Microsoft.DefaultV2`), because Azure refused an annotate-only policy without an approved exception, and it blocked 4 of the 598 requests in the config without gateway guards (logged as `azure_content_filter`). Another 20 requests (9, 10 and 1 across the three configs) got a 400 from luna with code `cyber_policy` or `bio_policy`, which the gateway ends as `provider_refusal` with the fixed refusal instead of sending them to gpt-5-mini. An earlier run of the gateway failed those over to gpt-5-mini, which answered them. The filtered and refused requests come out differently on replay, replayed calls cost $0, and which prompts luna refuses varies a little from run to run. `make demo` renders from the committed live records, so the README numbers don't depend on replay.
 - **No human labels.** Nothing in this repo was labeled or reviewed by a person.
+- **Prompt Shields was not run.** The Prompt Shields client is tested only against a mock transport.
 
 </details>
 
@@ -349,7 +360,7 @@ Offline everything costs $0. The live parts use `gpt-6-luna` ($0.10 per million 
 | End-to-end, 3 configs, 448 test attacks and 150 benign questions | `make eval-e2e-live` | about 1,800 | about $0.40 | $2.00 (`DollarCap`) |
 | garak, 12 probes at a 40-prompt cap | `make garak` against a live gateway | about 500 | about $0.10 | $1.00 (`GATEWAY_DOLLAR_CAP_USD`) |
 
-The estimates assume about 1,500 input and 120 output tokens per model call and ignore the prompt-cache discount. Requests the gateway blocks before the model cost nothing.
+The estimates assume about 1,500 input and 120 output tokens per model call and ignore the prompt-cache discount. The Cost column in the end-to-end table prices each record's tokens at list price, also with no prompt-cache discount. Requests the gateway blocks before the model cost nothing.
 
 ## How I built this
 
