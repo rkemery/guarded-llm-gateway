@@ -133,3 +133,44 @@ def test_profile_selection_uses_dev_only_and_config_reads_it(tmp_path) -> None:
     both = load_thresholds(path, ("deberta", "piguard"))
     assert both["prompt"] == {"piguard": 0.9, "deberta": 0.99}
     assert load_thresholds(path, ())["detectors"] == []
+
+
+def test_transformed_items_stay_out_of_tuning_and_the_headline() -> None:
+    from dataclasses import replace
+
+    items = _items()
+    tuned_before = tune(items)
+    extra = []
+    for item in items:
+        # Every benign item and attack also gets a base64 twin that scores 1.0.
+        twin_meta = {**item.meta, "transform": "base64"}
+        scores = {**item.scores, "piguard": 1.0}
+        extra.append(replace(item, item_id=f"{item.item_id}-b64", meta=twin_meta, scores=scores))
+    items += extra
+    tuned = tune(items)
+    assert tuned["prompt"] == tuned_before["prompt"]
+    results = evaluate(items, tuned)["piguard"]
+    assert results["attack:direct_injection"]["n"] == 20
+    assert results["benign:banking77"]["n"] == 150
+    assert results["benign_transform:base64"]["rate"] == 1.0
+    assert results["benign_transform:none"]["n"] == 150
+    assert results["transform:base64"]["n"] == 20
+
+
+def test_benign_transform_rows_are_seeded_and_normalized() -> None:
+    from guarded_llm_gateway.eval.detector_eval import benign_transform_rows
+
+    benign = [
+        {"id": f"ben-x-{i}", "set": "x", "split": "test", "kind": "prompt", "source": "s",
+         "text": f"How do I order card number {i}?"}
+        for i in range(400)
+    ]  # fmt: skip
+    rows = benign_transform_rows(benign)
+    assert rows == benign_transform_rows(benign)
+    assert len(rows) == 150 * 5
+    assert len({r["item_id"] for r in rows}) == len(rows)
+    by_transform = {r["transform"]: r for r in rows if r["cluster"] == rows[0]["cluster"]}
+    original = next(b["text"] for b in benign if b["id"] == rows[0]["cluster"])
+    # The gateway normalizes input first, so zero-width spaces never reach the detector.
+    assert by_transform["zero_width"]["text"] == original
+    assert by_transform["base64"]["text"].startswith("base64: ")

@@ -65,7 +65,8 @@ def detector_tables(summary: dict[str, Any]) -> str:
         "**Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split "
         f"({tuned['prompt']['n_dev_benign']} benign prompts, {tuned['document']['n_dev_benign']} "
         "benign documents), every rate below on the held-out test split. Wilson 95% CIs, "
-        "attack CIs clustered by payload group.",
+        "attack CIs clustered by payload group. Direct injections and JBB requests are "
+        "untransformed here. The transform table further down has the encoded variants.",
         "",
         "| Detector | Direct injections TPR | Indirect injections TPR (poisoned article) "
         "| JBB harmful requests flagged |",
@@ -96,12 +97,14 @@ def detector_tables(summary: dict[str, Any]) -> str:
         )
         lines += [
             f"The gateway runs **{names[chosen]}**, the profile with the best mean TPR on the dev "
-            f"split at the same 1% FPR (dev TPR: {parts}).",
+            f"split at the same 1% FPR (dev TPR, transformed injections included: {parts}).",
             "",
         ]
     lines.append(
         f"n: direct injections {_n(first.get('attack:direct_injection'))}, indirect "
-        f"{_n(first.get('attack:indirect'))}, JBB {_n(first.get('attack:jbb_harmful'))}."
+        f"{_n(first.get('attack:indirect'))}, JBB {_n(first.get('attack:jbb_harmful'))}. "
+        "Presidio redacts the prompt before the detector sees it in the gateway, so the "
+        "pipeline table below blocks slightly fewer."
     )
     lines += ["", "**False positive rate on held-out benign traffic**, same thresholds.", ""]
     header = "| Detector | " + " | ".join(label for _, label in BENIGN_SETS) + " |"
@@ -113,7 +116,8 @@ def detector_tables(summary: dict[str, Any]) -> str:
     lines.append("n: " + ", ".join(f"{label} {_n(first.get(s))}" for s, label in BENIGN_SETS) + ".")
     lines += [
         "",
-        "At the vendors' default threshold of 0.5 instead of the tuned one:",
+        "At the vendors' default threshold of 0.5 instead of the tuned one (untransformed "
+        "injections):",
         "",
         "| Detector at 0.5 | Direct injections TPR | Banking77 FPR | NotInject FPR |",
         "|---|---|---|---|",
@@ -130,21 +134,42 @@ def detector_tables(summary: dict[str, Any]) -> str:
         )
     lines += [
         "",
-        "**Direct injection TPR by mechanical transform** (test split, tuned thresholds).",
+        "**Injection TPR and benign FPR by mechanical transform** (test split, tuned "
+        "thresholds, injections only). The benign FPR applies the same transform to a seeded "
+        "sample of held-out benign prompts, up to 150 each from Banking77, the Tallowbrook RAG "
+        "questions and NotInject. The none row is the same prompts untransformed. When a "
+        "transform's benign FPR is about as high as its TPR, the detector is flagging the "
+        "format, not the injection.",
         "",
-        "| Transform | n | PIGuard | deberta | Both, OR |",
-        "|---|---|---|---|---|",
+        row(
+            "Transform",
+            "Injections",
+            "PIGuard TPR",
+            "PIGuard benign FPR",
+            "deberta TPR",
+            "deberta benign FPR",
+            "Both, OR TPR",
+            "Both, OR benign FPR",
+            "Benign prompts",
+        ),
+        sep(9),
     ]
     for t in (*TRANSFORM_ROWS, "zero_width_unnormalized"):
-        key = (
-            "attack:zero_width_unnormalized" if t == "zero_width_unnormalized" else f"transform:{t}"
-        )
-        label = "zero_width, input normalization off" if t == "zero_width_unnormalized" else t
-        cells = [test[d].get(key) for d, _ in DETECTOR_ROWS]
-        lines.append(f"| {label} | {_n(cells[2])} | " + " | ".join(pct(c) for c in cells) + " |")
+        unnormalized = t == "zero_width_unnormalized"
+        key = "attack:zero_width_unnormalized" if unnormalized else f"transform:{t}"
+        label = "zero_width, input normalization off" if unnormalized else t
+        attack = [test[d].get(key) for d, _ in DETECTOR_ROWS]
+        benign = [
+            None if unnormalized else test[d].get(f"benign_transform:{t}") for d, _ in DETECTOR_ROWS
+        ]
+        cells = [label, _n(attack[2])]
+        for a, b in zip(attack, benign, strict=True):
+            cells += [pct(a), pct(b) if b else ""]
+        cells.append(_n(benign[2]) if benign[2] else "")
+        lines.append(row(*cells))
     lines += [
         "",
-        "**Direct injection TPR by source** (test split).",
+        "**Direct injection TPR by source** (test split, untransformed).",
         "",
         "| Source | n | PIGuard | deberta | Both, OR |",
     ]

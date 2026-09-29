@@ -146,7 +146,10 @@ def summarize(out_dir: Path = OUT_DIR) -> dict[str, Any]:
     groups: dict[str, list[EvalRecord]] = defaultdict(list)
     for r in records:
         if r.meta["run"] == "suite":
-            groups[r.meta["group"]].append(r)
+            # Encoded variants get their own row, so the untransformed row lines up with the
+            # detector table's headline.
+            untransformed = r.meta["transform"] in ("none", "planted_in_article")
+            groups[r.meta["group"] + ("" if untransformed else ", transformed")].append(r)
     by_group: dict[str, Any] = {}
     for name, recs in sorted(groups.items()):
         clusters = [r.cluster or r.item_id for r in recs]

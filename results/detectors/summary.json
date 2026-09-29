@@ -43,35 +43,35 @@
   "test": {
     "piguard": {
       "attack:direct_injection": {
-        "k": 210,
-        "n": 265,
-        "rate": 0.7924528301886793,
-        "low": 0.732908017077317,
-        "high": 0.8415920315392331,
-        "method": "Wilson with Korn-Graubard effective n (130 clusters)"
+        "k": 113,
+        "n": 130,
+        "rate": 0.8692307692307693,
+        "low": 0.8005404612447582,
+        "high": 0.9167260781808926,
+        "method": "Wilson"
       },
       "attack:indirect": {
         "k": 35,
         "n": 79,
         "rate": 0.4430379746835443,
-        "low": 0.2811082847718871,
-        "high": 0.6180518876434412,
+        "low": 0.281108284771887,
+        "high": 0.6180518876434413,
         "method": "Wilson with Korn-Graubard effective n (16 clusters)"
       },
       "attack:jbb_harmful": {
-        "k": 49,
-        "n": 104,
-        "rate": 0.47115384615384615,
-        "low": 0.3743081754826655,
-        "high": 0.5702209617454645,
-        "method": "Wilson with Korn-Graubard effective n (54 clusters)"
+        "k": 24,
+        "n": 54,
+        "rate": 0.4444444444444444,
+        "low": 0.32002464172229655,
+        "high": 0.5762435347322474,
+        "method": "Wilson"
       },
       "attack:zero_width_unnormalized": {
         "k": 1,
-        "n": 37,
-        "rate": 0.02702702702702703,
-        "low": 0.004786974451940429,
-        "high": 0.13824069863730518,
+        "n": 27,
+        "rate": 0.037037037037037035,
+        "low": 0.006568145980785117,
+        "high": 0.18283465933575843,
         "method": "Wilson"
       },
       "benign:banking77": {
@@ -114,87 +114,135 @@
         "high": 0.0249702443680766,
         "method": "Wilson"
       },
-      "source:Lakera/gandalf_ignore_instructions": {
-        "k": 102,
-        "n": 125,
-        "rate": 0.816,
-        "low": 0.73736833032571,
-        "high": 0.8750778611582487,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
-      },
-      "source:deepset/prompt-injections": {
-        "k": 108,
-        "n": 140,
-        "rate": 0.7714285714285715,
-        "low": 0.6744744291102993,
-        "high": 0.8460952323698343,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
-      },
-      "source:deepset/prompt-injections, test-split rows only": {
-        "k": 16,
-        "n": 22,
-        "rate": 0.7272727272727273,
-        "low": 0.42355197954276336,
-        "high": 0.9063505361915654,
-        "method": "Wilson with Korn-Graubard effective n (12 clusters)"
-      },
-      "transform:base64": {
-        "k": 37,
-        "n": 37,
+      "benign_transform:base64": {
+        "k": 450,
+        "n": 450,
         "rate": 1.0,
-        "low": 0.9059421741627975,
+        "low": 0.9915356811370294,
         "high": 1.0,
         "method": "Wilson"
       },
+      "benign_transform:code_fence": {
+        "k": 14,
+        "n": 450,
+        "rate": 0.03111111111111111,
+        "low": 0.018621099270101377,
+        "high": 0.05153877308584001,
+        "method": "Wilson"
+      },
+      "benign_transform:homoglyph": {
+        "k": 1,
+        "n": 450,
+        "rate": 0.0022222222222222222,
+        "low": 0.00039238455363754116,
+        "high": 0.01247875955883103,
+        "method": "Wilson"
+      },
+      "benign_transform:leetspeak": {
+        "k": 382,
+        "n": 450,
+        "rate": 0.8488888888888889,
+        "low": 0.8128526382785087,
+        "high": 0.879018925892663,
+        "method": "Wilson"
+      },
+      "benign_transform:none": {
+        "k": 17,
+        "n": 450,
+        "rate": 0.03777777777777778,
+        "low": 0.02371824983232889,
+        "high": 0.059662098272106216,
+        "method": "Wilson"
+      },
+      "benign_transform:zero_width": {
+        "k": 17,
+        "n": 450,
+        "rate": 0.03777777777777778,
+        "low": 0.02371824983232889,
+        "high": 0.059662098272106216,
+        "method": "Wilson"
+      },
+      "source:Lakera/gandalf_ignore_instructions": {
+        "k": 58,
+        "n": 65,
+        "rate": 0.8923076923076924,
+        "low": 0.7939868641855017,
+        "high": 0.9468457804688724,
+        "method": "Wilson"
+      },
+      "source:deepset/prompt-injections": {
+        "k": 55,
+        "n": 65,
+        "rate": 0.8461538461538461,
+        "low": 0.7394468036002149,
+        "high": 0.914229059330115,
+        "method": "Wilson"
+      },
+      "source:deepset/prompt-injections, test-split rows only": {
+        "k": 10,
+        "n": 12,
+        "rate": 0.8333333333333334,
+        "low": 0.5519691377470267,
+        "high": 0.9530348578161462,
+        "method": "Wilson"
+      },
+      "transform:base64": {
+        "k": 27,
+        "n": 27,
+        "rate": 1.0,
+        "low": 0.8754449702581327,
+        "high": 0.9999999999999999,
+        "method": "Wilson"
+      },
       "transform:code_fence": {
-        "k": 23,
-        "n": 37,
-        "rate": 0.6216216216216216,
-        "low": 0.46100430439217654,
-        "high": 0.7593600082420173,
+        "k": 21,
+        "n": 27,
+        "rate": 0.7777777777777778,
+        "low": 0.5924307113336742,
+        "high": 0.8939276054763996,
         "method": "Wilson"
       },
       "transform:homoglyph": {
         "k": 1,
-        "n": 37,
-        "rate": 0.02702702702702703,
-        "low": 0.004786974451940429,
-        "high": 0.13824069863730518,
+        "n": 27,
+        "rate": 0.037037037037037035,
+        "low": 0.006568145980785117,
+        "high": 0.18283465933575843,
         "method": "Wilson"
       },
       "transform:leetspeak": {
-        "k": 36,
-        "n": 37,
-        "rate": 0.972972972972973,
-        "low": 0.861759301362695,
-        "high": 0.9952130255480596,
+        "k": 26,
+        "n": 27,
+        "rate": 0.9629629629629629,
+        "low": 0.8171653406642414,
+        "high": 0.9934318540192149,
         "method": "Wilson"
       },
       "transform:none": {
-        "k": 137,
-        "n": 184,
-        "rate": 0.7445652173913043,
-        "low": 0.6769980914631023,
-        "high": 0.8021293629606324,
+        "k": 113,
+        "n": 130,
+        "rate": 0.8692307692307693,
+        "low": 0.8005404612447582,
+        "high": 0.9167260781808926,
         "method": "Wilson"
       },
       "transform:zero_width": {
-        "k": 25,
-        "n": 37,
-        "rate": 0.6756756756756757,
-        "low": 0.514636672419722,
-        "high": 0.8036673347185581,
+        "k": 22,
+        "n": 27,
+        "rate": 0.8148148148148148,
+        "low": 0.6330131638145156,
+        "high": 0.9181929285702346,
         "method": "Wilson"
       }
     },
     "deberta": {
       "attack:direct_injection": {
-        "k": 99,
-        "n": 265,
-        "rate": 0.37358490566037733,
-        "low": 0.30258411277666025,
-        "high": 0.4504845126907611,
-        "method": "Wilson with Korn-Graubard effective n (130 clusters)"
+        "k": 71,
+        "n": 130,
+        "rate": 0.5461538461538461,
+        "low": 0.4604727382404661,
+        "high": 0.6291855791877401,
+        "method": "Wilson"
       },
       "attack:indirect": {
         "k": 6,
@@ -206,18 +254,18 @@
       },
       "attack:jbb_harmful": {
         "k": 0,
-        "n": 104,
+        "n": 54,
         "rate": 0.0,
-        "low": 3.469446951953614e-18,
-        "high": 0.037242220311418175,
-        "method": "Wilson with Korn-Graubard effective n (54 clusters)"
+        "low": 0.0,
+        "high": 0.0664135880908964,
+        "method": "Wilson"
       },
       "attack:zero_width_unnormalized": {
         "k": 0,
-        "n": 37,
+        "n": 27,
         "rate": 0.0,
         "low": 0.0,
-        "high": 0.0940578258372025,
+        "high": 0.12455502974186705,
         "method": "Wilson"
       },
       "benign:banking77": {
@@ -260,87 +308,135 @@
         "high": 0.0249702443680766,
         "method": "Wilson"
       },
+      "benign_transform:base64": {
+        "k": 0,
+        "n": 450,
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.008464318862970664,
+        "method": "Wilson"
+      },
+      "benign_transform:code_fence": {
+        "k": 25,
+        "n": 450,
+        "rate": 0.05555555555555555,
+        "low": 0.037910290878047176,
+        "high": 0.0807246592223712,
+        "method": "Wilson"
+      },
+      "benign_transform:homoglyph": {
+        "k": 24,
+        "n": 450,
+        "rate": 0.05333333333333334,
+        "low": 0.03609864030120333,
+        "high": 0.07812948454971715,
+        "method": "Wilson"
+      },
+      "benign_transform:leetspeak": {
+        "k": 4,
+        "n": 450,
+        "rate": 0.008888888888888889,
+        "low": 0.00346199040217373,
+        "high": 0.022629629458788568,
+        "method": "Wilson"
+      },
+      "benign_transform:none": {
+        "k": 17,
+        "n": 450,
+        "rate": 0.03777777777777778,
+        "low": 0.02371824983232889,
+        "high": 0.059662098272106216,
+        "method": "Wilson"
+      },
+      "benign_transform:zero_width": {
+        "k": 17,
+        "n": 450,
+        "rate": 0.03777777777777778,
+        "low": 0.02371824983232889,
+        "high": 0.059662098272106216,
+        "method": "Wilson"
+      },
       "source:Lakera/gandalf_ignore_instructions": {
-        "k": 86,
-        "n": 125,
-        "rate": 0.688,
-        "low": 0.6004814775253132,
-        "high": 0.7638852439904597,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
+        "k": 62,
+        "n": 65,
+        "rate": 0.9538461538461539,
+        "low": 0.8728615273666118,
+        "high": 0.9841801595864874,
+        "method": "Wilson"
       },
       "source:deepset/prompt-injections": {
-        "k": 13,
-        "n": 140,
-        "rate": 0.09285714285714286,
-        "low": 0.04891277625174758,
-        "high": 0.16925614145399726,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
+        "k": 9,
+        "n": 65,
+        "rate": 0.13846153846153847,
+        "low": 0.0745909040315372,
+        "high": 0.24268097246345163,
+        "method": "Wilson"
       },
       "source:deepset/prompt-injections, test-split rows only": {
         "k": 2,
-        "n": 22,
-        "rate": 0.09090909090909091,
-        "low": 0.01836872532952022,
-        "high": 0.3482809822770885,
-        "method": "Wilson with Korn-Graubard effective n (12 clusters)"
+        "n": 12,
+        "rate": 0.16666666666666666,
+        "low": 0.04696514218385378,
+        "high": 0.4480308622529734,
+        "method": "Wilson"
       },
       "transform:base64": {
         "k": 0,
-        "n": 37,
+        "n": 27,
         "rate": 0.0,
         "low": 0.0,
-        "high": 0.0940578258372025,
+        "high": 0.12455502974186705,
         "method": "Wilson"
       },
       "transform:code_fence": {
         "k": 14,
-        "n": 37,
-        "rate": 0.3783783783783784,
-        "low": 0.24063999175798265,
-        "high": 0.5389956956078235,
+        "n": 27,
+        "rate": 0.5185185185185185,
+        "low": 0.3398561575495229,
+        "high": 0.6925677302378153,
         "method": "Wilson"
       },
       "transform:homoglyph": {
         "k": 1,
-        "n": 37,
-        "rate": 0.02702702702702703,
-        "low": 0.004786974451940429,
-        "high": 0.13824069863730518,
+        "n": 27,
+        "rate": 0.037037037037037035,
+        "low": 0.006568145980785117,
+        "high": 0.18283465933575843,
         "method": "Wilson"
       },
       "transform:leetspeak": {
         "k": 0,
-        "n": 37,
+        "n": 27,
         "rate": 0.0,
         "low": 0.0,
-        "high": 0.0940578258372025,
+        "high": 0.12455502974186705,
         "method": "Wilson"
       },
       "transform:none": {
         "k": 71,
-        "n": 184,
-        "rate": 0.3858695652173913,
-        "low": 0.3185494599930223,
-        "high": 0.45785772794256807,
+        "n": 130,
+        "rate": 0.5461538461538461,
+        "low": 0.4604727382404661,
+        "high": 0.6291855791877401,
         "method": "Wilson"
       },
       "transform:zero_width": {
         "k": 13,
-        "n": 37,
-        "rate": 0.35135135135135137,
-        "low": 0.2182560713392713,
-        "high": 0.5124097687744917,
+        "n": 27,
+        "rate": 0.48148148148148145,
+        "low": 0.3074322697621846,
+        "high": 0.6601438424504771,
         "method": "Wilson"
       }
     },
     "combined": {
       "attack:direct_injection": {
-        "k": 157,
-        "n": 265,
-        "rate": 0.5924528301886792,
-        "low": 0.5215434551061661,
-        "high": 0.6597099552257605,
-        "method": "Wilson with Korn-Graubard effective n (130 clusters)"
+        "k": 85,
+        "n": 130,
+        "rate": 0.6538461538461539,
+        "low": 0.5687115031064136,
+        "high": 0.7301495549876076,
+        "method": "Wilson"
       },
       "attack:indirect": {
         "k": 32,
@@ -351,19 +447,19 @@
         "method": "Wilson with Korn-Graubard effective n (16 clusters)"
       },
       "attack:jbb_harmful": {
-        "k": 22,
-        "n": 104,
-        "rate": 0.21153846153846154,
-        "low": 0.14273872520580258,
-        "high": 0.3018240942046311,
-        "method": "Wilson with Korn-Graubard effective n (54 clusters)"
+        "k": 2,
+        "n": 54,
+        "rate": 0.037037037037037035,
+        "low": 0.01021636794844559,
+        "high": 0.12535176917275476,
+        "method": "Wilson"
       },
       "attack:zero_width_unnormalized": {
         "k": 0,
-        "n": 37,
+        "n": 27,
         "rate": 0.0,
         "low": 0.0,
-        "high": 0.0940578258372025,
+        "high": 0.12455502974186705,
         "method": "Wilson"
       },
       "benign:banking77": {
@@ -406,87 +502,135 @@
         "high": 0.0249702443680766,
         "method": "Wilson"
       },
+      "benign_transform:base64": {
+        "k": 450,
+        "n": 450,
+        "rate": 1.0,
+        "low": 0.9915356811370294,
+        "high": 1.0,
+        "method": "Wilson"
+      },
+      "benign_transform:code_fence": {
+        "k": 11,
+        "n": 450,
+        "rate": 0.024444444444444446,
+        "low": 0.013703163535114138,
+        "high": 0.04323623307233352,
+        "method": "Wilson"
+      },
+      "benign_transform:homoglyph": {
+        "k": 6,
+        "n": 450,
+        "rate": 0.013333333333333334,
+        "low": 0.006124728720905241,
+        "high": 0.028780541639052873,
+        "method": "Wilson"
+      },
+      "benign_transform:leetspeak": {
+        "k": 179,
+        "n": 450,
+        "rate": 0.3977777777777778,
+        "low": 0.353605463251724,
+        "high": 0.4436805752713722,
+        "method": "Wilson"
+      },
+      "benign_transform:none": {
+        "k": 12,
+        "n": 450,
+        "rate": 0.02666666666666667,
+        "low": 0.01531903348595833,
+        "high": 0.04602718837098723,
+        "method": "Wilson"
+      },
+      "benign_transform:zero_width": {
+        "k": 12,
+        "n": 450,
+        "rate": 0.02666666666666667,
+        "low": 0.01531903348595833,
+        "high": 0.04602718837098723,
+        "method": "Wilson"
+      },
       "source:Lakera/gandalf_ignore_instructions": {
-        "k": 103,
-        "n": 125,
-        "rate": 0.824,
-        "low": 0.7462447200681098,
-        "high": 0.8817064382888605,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
+        "k": 61,
+        "n": 65,
+        "rate": 0.9384615384615385,
+        "low": 0.852178481344768,
+        "high": 0.9758109450336497,
+        "method": "Wilson"
       },
       "source:deepset/prompt-injections": {
-        "k": 54,
-        "n": 140,
-        "rate": 0.38571428571428573,
-        "low": 0.30536734311369806,
-        "high": 0.47281214316370856,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
+        "k": 24,
+        "n": 65,
+        "rate": 0.36923076923076925,
+        "low": 0.2622939587407091,
+        "high": 0.4907618263744998,
+        "method": "Wilson"
       },
       "source:deepset/prompt-injections, test-split rows only": {
-        "k": 6,
-        "n": 22,
-        "rate": 0.2727272727272727,
-        "low": 0.12015405433073581,
-        "high": 0.5073278799927887,
-        "method": "Wilson with Korn-Graubard effective n (12 clusters)"
+        "k": 3,
+        "n": 12,
+        "rate": 0.25,
+        "low": 0.08894166839405476,
+        "high": 0.5323053349335656,
+        "method": "Wilson"
       },
       "transform:base64": {
-        "k": 37,
-        "n": 37,
+        "k": 27,
+        "n": 27,
         "rate": 1.0,
-        "low": 0.9059421741627975,
-        "high": 1.0,
+        "low": 0.8754449702581327,
+        "high": 0.9999999999999999,
         "method": "Wilson"
       },
       "transform:code_fence": {
         "k": 14,
-        "n": 37,
-        "rate": 0.3783783783783784,
-        "low": 0.24063999175798265,
-        "high": 0.5389956956078235,
+        "n": 27,
+        "rate": 0.5185185185185185,
+        "low": 0.3398561575495229,
+        "high": 0.6925677302378153,
         "method": "Wilson"
       },
       "transform:homoglyph": {
         "k": 0,
-        "n": 37,
+        "n": 27,
         "rate": 0.0,
         "low": 0.0,
-        "high": 0.0940578258372025,
+        "high": 0.12455502974186705,
         "method": "Wilson"
       },
       "transform:leetspeak": {
-        "k": 24,
-        "n": 37,
-        "rate": 0.6486486486486487,
-        "low": 0.4875902312255084,
-        "high": 0.7817439286607287,
+        "k": 15,
+        "n": 27,
+        "rate": 0.5555555555555556,
+        "low": 0.3731302451322448,
+        "high": 0.72414141822977,
         "method": "Wilson"
       },
       "transform:none": {
-        "k": 87,
-        "n": 184,
-        "rate": 0.47282608695652173,
-        "low": 0.40198263362504194,
-        "high": 0.5447809825500987,
+        "k": 85,
+        "n": 130,
+        "rate": 0.6538461538461539,
+        "low": 0.5687115031064136,
+        "high": 0.7301495549876076,
         "method": "Wilson"
       },
       "transform:zero_width": {
-        "k": 17,
-        "n": 37,
-        "rate": 0.4594594594594595,
-        "low": 0.3103856980437303,
-        "high": 0.6161595310782052,
+        "k": 16,
+        "n": 27,
+        "rate": 0.5925925925925926,
+        "low": 0.4072670096806468,
+        "high": 0.7548524292560443,
         "method": "Wilson"
       }
     },
     "piguard@0.5": {
       "attack:direct_injection": {
-        "k": 219,
-        "n": 265,
-        "rate": 0.8264150943396227,
-        "low": 0.7672834891765271,
-        "high": 0.873008523235706,
-        "method": "Wilson with Korn-Graubard effective n (130 clusters)"
+        "k": 117,
+        "n": 130,
+        "rate": 0.9,
+        "low": 0.83641423905855,
+        "high": 0.940624511985905,
+        "method": "Wilson"
       },
       "attack:indirect": {
         "k": 41,
@@ -497,19 +641,19 @@
         "method": "Wilson with Korn-Graubard effective n (16 clusters)"
       },
       "attack:jbb_harmful": {
-        "k": 59,
-        "n": 104,
-        "rate": 0.5673076923076923,
-        "low": 0.4625545773252797,
-        "high": 0.6663700203548333,
-        "method": "Wilson with Korn-Graubard effective n (54 clusters)"
+        "k": 31,
+        "n": 54,
+        "rate": 0.5740740740740741,
+        "low": 0.4416273382599005,
+        "high": 0.6966817598007073,
+        "method": "Wilson"
       },
       "attack:zero_width_unnormalized": {
-        "k": 5,
-        "n": 37,
-        "rate": 0.13513513513513514,
-        "low": 0.059132944257320186,
-        "high": 0.2797741178400979,
+        "k": 1,
+        "n": 27,
+        "rate": 0.037037037037037035,
+        "low": 0.006568145980785117,
+        "high": 0.18283465933575843,
         "method": "Wilson"
       },
       "benign:banking77": {
@@ -552,87 +696,135 @@
         "high": 0.0249702443680766,
         "method": "Wilson"
       },
-      "source:Lakera/gandalf_ignore_instructions": {
-        "k": 103,
-        "n": 125,
-        "rate": 0.824,
-        "low": 0.7462447200681098,
-        "high": 0.8817064382888605,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
-      },
-      "source:deepset/prompt-injections": {
-        "k": 116,
-        "n": 140,
-        "rate": 0.8285714285714286,
-        "low": 0.7288266472651721,
-        "high": 0.8968213852411497,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
-      },
-      "source:deepset/prompt-injections, test-split rows only": {
-        "k": 18,
-        "n": 22,
-        "rate": 0.8181818181818182,
-        "low": 0.4072656950034161,
-        "high": 0.9671828160755549,
-        "method": "Wilson with Korn-Graubard effective n (12 clusters)"
-      },
-      "transform:base64": {
-        "k": 37,
-        "n": 37,
+      "benign_transform:base64": {
+        "k": 450,
+        "n": 450,
         "rate": 1.0,
-        "low": 0.9059421741627975,
+        "low": 0.9915356811370294,
         "high": 1.0,
         "method": "Wilson"
       },
+      "benign_transform:code_fence": {
+        "k": 18,
+        "n": 450,
+        "rate": 0.04,
+        "low": 0.025449350136813254,
+        "high": 0.06233782321711977,
+        "method": "Wilson"
+      },
+      "benign_transform:homoglyph": {
+        "k": 1,
+        "n": 450,
+        "rate": 0.0022222222222222222,
+        "low": 0.00039238455363754116,
+        "high": 0.01247875955883103,
+        "method": "Wilson"
+      },
+      "benign_transform:leetspeak": {
+        "k": 392,
+        "n": 450,
+        "rate": 0.8711111111111111,
+        "low": 0.8369826267896221,
+        "high": 0.8989571898765285,
+        "method": "Wilson"
+      },
+      "benign_transform:none": {
+        "k": 18,
+        "n": 450,
+        "rate": 0.04,
+        "low": 0.025449350136813254,
+        "high": 0.06233782321711977,
+        "method": "Wilson"
+      },
+      "benign_transform:zero_width": {
+        "k": 18,
+        "n": 450,
+        "rate": 0.04,
+        "low": 0.025449350136813254,
+        "high": 0.06233782321711977,
+        "method": "Wilson"
+      },
+      "source:Lakera/gandalf_ignore_instructions": {
+        "k": 59,
+        "n": 65,
+        "rate": 0.9076923076923077,
+        "low": 0.8128799948403962,
+        "high": 0.9570049103886591,
+        "method": "Wilson"
+      },
+      "source:deepset/prompt-injections": {
+        "k": 58,
+        "n": 65,
+        "rate": 0.8923076923076924,
+        "low": 0.7939868641855017,
+        "high": 0.9468457804688724,
+        "method": "Wilson"
+      },
+      "source:deepset/prompt-injections, test-split rows only": {
+        "k": 11,
+        "n": 12,
+        "rate": 0.9166666666666666,
+        "low": 0.646120088858883,
+        "high": 0.9851349055950829,
+        "method": "Wilson"
+      },
+      "transform:base64": {
+        "k": 27,
+        "n": 27,
+        "rate": 1.0,
+        "low": 0.8754449702581327,
+        "high": 0.9999999999999999,
+        "method": "Wilson"
+      },
       "transform:code_fence": {
-        "k": 25,
-        "n": 37,
-        "rate": 0.6756756756756757,
-        "low": 0.514636672419722,
-        "high": 0.8036673347185581,
+        "k": 22,
+        "n": 27,
+        "rate": 0.8148148148148148,
+        "low": 0.6330131638145156,
+        "high": 0.9181929285702346,
         "method": "Wilson"
       },
       "transform:homoglyph": {
         "k": 4,
-        "n": 37,
-        "rate": 0.10810810810810811,
-        "low": 0.04285189940411473,
-        "high": 0.24708531544126028,
+        "n": 27,
+        "rate": 0.14814814814814814,
+        "low": 0.05915927776244326,
+        "high": 0.3247868542781298,
         "method": "Wilson"
       },
       "transform:leetspeak": {
-        "k": 36,
-        "n": 37,
-        "rate": 0.972972972972973,
-        "low": 0.861759301362695,
-        "high": 0.9952130255480596,
+        "k": 26,
+        "n": 27,
+        "rate": 0.9629629629629629,
+        "low": 0.8171653406642414,
+        "high": 0.9934318540192149,
         "method": "Wilson"
       },
       "transform:none": {
-        "k": 148,
-        "n": 184,
-        "rate": 0.8043478260869565,
-        "low": 0.741052834473102,
-        "high": 0.8551946643653237,
+        "k": 117,
+        "n": 130,
+        "rate": 0.9,
+        "low": 0.83641423905855,
+        "high": 0.940624511985905,
         "method": "Wilson"
       },
       "transform:zero_width": {
-        "k": 28,
-        "n": 37,
-        "rate": 0.7567567567567568,
-        "low": 0.5988270787855735,
-        "high": 0.8663864701088361,
+        "k": 23,
+        "n": 27,
+        "rate": 0.8518518518518519,
+        "low": 0.6752131457218702,
+        "high": 0.9408407222375568,
         "method": "Wilson"
       }
     },
     "deberta@0.5": {
       "attack:direct_injection": {
-        "k": 196,
-        "n": 265,
-        "rate": 0.7396226415094339,
-        "low": 0.6695342207973124,
-        "high": 0.7993019337022907,
-        "method": "Wilson with Korn-Graubard effective n (130 clusters)"
+        "k": 91,
+        "n": 130,
+        "rate": 0.7,
+        "low": 0.6164118937305151,
+        "high": 0.7721074817917123,
+        "method": "Wilson"
       },
       "attack:indirect": {
         "k": 38,
@@ -643,19 +835,19 @@
         "method": "Wilson with Korn-Graubard effective n (16 clusters)"
       },
       "attack:jbb_harmful": {
-        "k": 19,
-        "n": 104,
-        "rate": 0.18269230769230768,
-        "low": 0.11900789368019762,
-        "high": 0.2700112076712793,
-        "method": "Wilson with Korn-Graubard effective n (54 clusters)"
+        "k": 0,
+        "n": 54,
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0664135880908964,
+        "method": "Wilson"
       },
       "attack:zero_width_unnormalized": {
-        "k": 37,
-        "n": 37,
+        "k": 27,
+        "n": 27,
         "rate": 1.0,
-        "low": 0.9059421741627975,
-        "high": 1.0,
+        "low": 0.8754449702581327,
+        "high": 0.9999999999999999,
         "method": "Wilson"
       },
       "benign:banking77": {
@@ -698,76 +890,124 @@
         "high": 0.09318647239912747,
         "method": "Wilson"
       },
+      "benign_transform:base64": {
+        "k": 442,
+        "n": 450,
+        "rate": 0.9822222222222222,
+        "low": 0.965316274667474,
+        "high": 0.990964804473572,
+        "method": "Wilson"
+      },
+      "benign_transform:code_fence": {
+        "k": 129,
+        "n": 450,
+        "rate": 0.2866666666666667,
+        "low": 0.2468296240775175,
+        "high": 0.33011515197068336,
+        "method": "Wilson"
+      },
+      "benign_transform:homoglyph": {
+        "k": 287,
+        "n": 450,
+        "rate": 0.6377777777777778,
+        "low": 0.5923762578786756,
+        "high": 0.6808469075901947,
+        "method": "Wilson"
+      },
+      "benign_transform:leetspeak": {
+        "k": 237,
+        "n": 450,
+        "rate": 0.5266666666666666,
+        "low": 0.4805050005229514,
+        "high": 0.5723769024710235,
+        "method": "Wilson"
+      },
+      "benign_transform:none": {
+        "k": 81,
+        "n": 450,
+        "rate": 0.18,
+        "low": 0.14725904211218221,
+        "high": 0.21815812196011897,
+        "method": "Wilson"
+      },
+      "benign_transform:zero_width": {
+        "k": 81,
+        "n": 450,
+        "rate": 0.18,
+        "low": 0.14725904211218221,
+        "high": 0.21815812196011897,
+        "method": "Wilson"
+      },
       "source:Lakera/gandalf_ignore_instructions": {
-        "k": 115,
-        "n": 125,
-        "rate": 0.92,
-        "low": 0.8559996941574896,
-        "high": 0.9569850267609162,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
+        "k": 65,
+        "n": 65,
+        "rate": 1.0,
+        "low": 0.9441984686771432,
+        "high": 1.0,
+        "method": "Wilson"
       },
       "source:deepset/prompt-injections": {
-        "k": 81,
-        "n": 140,
-        "rate": 0.5785714285714286,
-        "low": 0.46844172877191226,
-        "high": 0.6814024803648047,
-        "method": "Wilson with Korn-Graubard effective n (65 clusters)"
+        "k": 26,
+        "n": 65,
+        "rate": 0.4,
+        "low": 0.2897202997469763,
+        "high": 0.5214400065175953,
+        "method": "Wilson"
       },
       "source:deepset/prompt-injections, test-split rows only": {
-        "k": 12,
-        "n": 22,
-        "rate": 0.5454545454545454,
-        "low": 0.325569268233474,
-        "high": 0.748934344901821,
-        "method": "Wilson with Korn-Graubard effective n (12 clusters)"
+        "k": 6,
+        "n": 12,
+        "rate": 0.5,
+        "low": 0.2537815976337061,
+        "high": 0.7462184023662939,
+        "method": "Wilson"
       },
       "transform:base64": {
-        "k": 36,
-        "n": 37,
-        "rate": 0.972972972972973,
-        "low": 0.861759301362695,
-        "high": 0.9952130255480596,
+        "k": 26,
+        "n": 27,
+        "rate": 0.9629629629629629,
+        "low": 0.8171653406642414,
+        "high": 0.9934318540192149,
         "method": "Wilson"
       },
       "transform:code_fence": {
         "k": 18,
-        "n": 37,
-        "rate": 0.4864864864864865,
-        "low": 0.3344640430301664,
-        "high": 0.6410510333438121,
+        "n": 27,
+        "rate": 0.6666666666666666,
+        "low": 0.47824760507320074,
+        "high": 0.8135673850128435,
         "method": "Wilson"
       },
       "transform:homoglyph": {
-        "k": 28,
-        "n": 37,
-        "rate": 0.7567567567567568,
-        "low": 0.5988270787855735,
-        "high": 0.8663864701088361,
+        "k": 23,
+        "n": 27,
+        "rate": 0.8518518518518519,
+        "low": 0.6752131457218702,
+        "high": 0.9408407222375568,
         "method": "Wilson"
       },
       "transform:leetspeak": {
-        "k": 24,
-        "n": 37,
-        "rate": 0.6486486486486487,
-        "low": 0.4875902312255084,
-        "high": 0.7817439286607287,
+        "k": 20,
+        "n": 27,
+        "rate": 0.7407407407407407,
+        "low": 0.5532142868544692,
+        "high": 0.8682962543809281,
         "method": "Wilson"
       },
       "transform:none": {
         "k": 91,
-        "n": 184,
-        "rate": 0.4945652173913043,
-        "low": 0.4231778111848097,
-        "high": 0.5661749120502184,
+        "n": 130,
+        "rate": 0.7,
+        "low": 0.6164118937305151,
+        "high": 0.7721074817917123,
         "method": "Wilson"
       },
       "transform:zero_width": {
         "k": 18,
-        "n": 37,
-        "rate": 0.4864864864864865,
-        "low": 0.3344640430301664,
-        "high": 0.6410510333438121,
+        "n": 27,
+        "rate": 0.6666666666666666,
+        "low": 0.47824760507320074,
+        "high": 0.8135673850128435,
         "method": "Wilson"
       }
     }

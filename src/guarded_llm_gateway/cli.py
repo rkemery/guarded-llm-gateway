@@ -42,7 +42,7 @@ def _eval_detectors(args: argparse.Namespace) -> int:
     from guarded_llm_gateway.eval import detector_eval, detector_report
 
     if not args.report_only:
-        detector_eval.run(torch_threads=args.threads)
+        detector_eval.run(torch_threads=args.threads, rescore=args.rescore)
     summary = detector_report.run()
     combined = summary["test"]["combined"]
     print("combined direct-injection TPR:", round(combined["attack:direct_injection"]["rate"], 3))
@@ -129,6 +129,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     p = sub.add_parser("eval-detectors", help="score the suites with both detectors (CPU)")
     p.add_argument("--threads", type=int, default=4)
     p.add_argument("--report-only", action="store_true", help="recompute metrics from saved scores")
+    p.add_argument("--rescore", action="store_true", help="score every row, not only new ones")
     p.set_defaults(fn=_eval_detectors)
 
     p = sub.add_parser("eval-pii", help="regex vs Presidio on gretel and Nemotron-PII")
