@@ -27,8 +27,10 @@ export REST_API_KEY="${REST_API_KEY:-garak-scan}"
 # garak writes reports under $XDG_DATA_HOME/garak/garak_runs.
 export XDG_DATA_HOME="$here/runs"
 prefix="gateway-$(date -u +%Y%m%dT%H%M%SZ)"
-config="$(mktemp --suffix=.yaml)"
-trap 'rm -f "$config"' EXIT
+# mktemp -d works on both GNU and BSD (macOS), --suffix is GNU-only.
+tmpdir="$(mktemp -d)"
+config="$tmpdir/gateway.yaml"
+trap 'rm -rf "$tmpdir"' EXIT
 sed "s/soft_probe_prompt_cap: .*/soft_probe_prompt_cap: $cap/" "$here/gateway.yaml" > "$config"
 
 uv run --project "$here" garak --config "$config" --spec "$spec" --report_prefix "$prefix"
