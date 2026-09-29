@@ -81,7 +81,11 @@ def test_fault_scenarios_route_through_the_chain() -> None:
     assert empty["503"]["k"] == 30
 
 
-def test_report_marks_live_rows_pending() -> None:
+def test_report_marks_live_rows_pending(monkeypatch, tmp_path) -> None:
+    # With no live results on disk, the live rows render as pending.
+    from guarded_llm_gateway.eval import report
+
+    monkeypatch.setattr(report, "RESULTS_DIR", tmp_path)
     text = render()
     assert "pending live run" in text
     assert pct({"n": 0}) == "n/a"
