@@ -61,11 +61,22 @@ def build_gateway(settings: Settings, metrics: GatewayMetrics | None = None) -> 
     )
 
 
-def _rate_key(request: Request) -> str:
-    key = request.headers.get("x-api-key")
-    if key:
-        return "key:" + hashlib.sha256(key.encode()).hexdigest()[:16]
-    return "ip:" + get_remote_address(request)
+def rate_key_for(api_keys: tuple[str, ...]) -> Callable[[Request], str]:
+    """Key rate limits and token budgets on X-API-Key only when it is a configured key.
+
+    Anything else, including every request in open mode (no keys configured), is
+    keyed on the client IP. Otherwise a caller could send a fresh random key with
+    each request and get a fresh bucket every time.
+    """
+    allowed = frozenset(api_keys)
+
+    def rate_key(request: Request) -> str:
+        key = request.headers.get("x-api-key")
+        if key and key in allowed:
+            return "key:" + hashlib.sha256(key.encode()).hexdigest()[:16]
+        return "ip:" + get_remote_address(request)
+
+    return rate_key
 
 
 def _body_limit(max_bytes: int) -> Callable[..., Awaitable[Response]]:
@@ -102,7 +113,8 @@ def create_app(settings: Settings | None = None, gateway: Gateway | None = None)
         if gateway.shields is not None:
             await gateway.shields.aclose()
 
-    limiter = Limiter(key_func=_rate_key, headers_enabled=True)
+    rate_key = rate_key_for(settings.api_keys)
+    limiter = Limiter(key_func=rate_key, headers_enabled=True)
     app = FastAPI(title="guarded-llm-gateway", version=__version__, lifespan=lifespan)
     app.state.limiter = limiter
     app.state.gateway = gateway
@@ -125,7 +137,7 @@ def create_app(settings: Settings | None = None, gateway: Gateway | None = None)
     ) -> Any:
         if settings.api_keys and x_api_key not in settings.api_keys:
             raise HTTPException(status_code=401, detail="missing or unknown X-API-Key")
-        key = _rate_key(request)
+        key = rate_key(request)
         try:
             result = await gateway.handle(body.message, api_key=key)
         except BudgetExceeded as exc:

@@ -54,7 +54,8 @@ def test_schema_and_size_validation(client_for, settings) -> None:
 
 
 def test_rate_limit_returns_429_with_retry_after(client_for, settings) -> None:
-    with client_for(app_settings=replace(settings, rate_limit="2/minute")) as client:
+    limited_settings = replace(settings, rate_limit="2/minute", api_keys=("k1", "k2"))
+    with client_for(app_settings=limited_settings) as client:
         headers = {"X-API-Key": "k1"}
         for _ in range(2):
             assert (
@@ -66,6 +67,19 @@ def test_rate_limit_returns_429_with_retry_after(client_for, settings) -> None:
         assert int(limited.headers["Retry-After"]) > 0
         other = client.post("/v1/chat", json={"message": "hi there"}, headers={"X-API-Key": "k2"})
         assert other.status_code == 200
+
+
+def test_open_mode_ignores_made_up_api_keys_for_rate_limits(client_for, settings) -> None:
+    # No keys configured: every caller is keyed on its IP, so fresh random keys
+    # don't buy fresh buckets.
+    with client_for(app_settings=replace(settings, rate_limit="2/minute")) as client:
+        codes = [
+            client.post(
+                "/v1/chat", json={"message": "hi there"}, headers={"X-API-Key": f"random-{i}"}
+            ).status_code
+            for i in range(4)
+        ]
+    assert codes == [200, 200, 429, 429]
 
 
 def test_token_budget_returns_429_with_retry_after(client_for) -> None:
