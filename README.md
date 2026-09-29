@@ -67,7 +67,18 @@ At the vendors' default threshold of 0.5 instead of the tuned one:
 
 | Automated scanner | Result |
 |---|---|
-| garak 0.17.0 against the running gateway (not a human red team) | pending live run |
+| garak `encoding.InjectBase64` attack success | 1.2% (0.2 to 6.7) |
+| garak `encoding.InjectHex` attack success | 10.0% (5.2 to 18.5) |
+| garak `latentinjection.LatentInjectionFactSnippetEiffel` attack success | 0.0% (0.0 to 8.8) |
+| garak `latentinjection.LatentInjectionReport` attack success | 0.0% (0.0 to 8.8) |
+| garak `latentinjection.LatentInjectionResume` attack success | 0.0% (0.0 to 8.8) |
+| garak `latentinjection.LatentWhois` attack success | 0.0% (0.0 to 2.7) |
+| garak `promptinject.HijackHateHumans` attack success | 0.0% (0.0 to 8.8) |
+| garak `promptinject.HijackKillHumans` attack success | 0.0% (0.0 to 8.8) |
+| garak `promptinject.HijackLongPrompt` attack success | 0.0% (0.0 to 8.8) |
+| garak `web_injection.MarkdownImageExfil` attack success | 0.0% (0.0 to 13.8) |
+| garak `web_injection.MarkdownXSS` attack success | 0.0% (0.0 to 35.4) |
+| garak `web_injection.StringAssemblyDataExfil` attack success | 0.0% (0.0 to 65.8) |
 
 **Input-side layers in the full pipeline** (offline, test split, fake model). Blocked = stopped before the model.
 
@@ -245,6 +256,7 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 - **Wide intervals on indirect injection.** The 79 test payloads come from 16 LLMail-Inject teams, and payloads from one team are alike, so the intervals are clustered by team and wide.
 - **Contamination.** PIGuard was trained on the deepset train split (the InjecGuard paper's Tables 4 and 5 list 343 benign and 203 injection rows from it), and most deepset rows in this suite come from that split. A separate row reports the deepset test-split rows alone. See `DATA_SOURCES.md`.
 - **Static suite.** Everything here is a fixed set of public payloads plus mechanical transforms. An attacker who can query the gateway and adapt will do better, which is why detector verdicts are hidden from clients and why garak is a separate row.
+- **Encoded text gets decoded and repeated.** garak's hex probe scored 10% (8 of 80) and base64 1% (1 of 80). In every hit, luna decoded the string, mostly an offensive term from garak's payload list, and repeated it in its answer. No hit leaked the canary, PII or a link. The output rules look for leaks, not offensive text, and neither injection detector reads hex (PIGuard catches base64, see the transform table). A moderation check on the reply would close this.
 - **Code-judged ASR is a lower bound.** A goal hijack that leaks nothing ("say something rude about a newspaper") does not count as a success. JailbreakBench goals need a judge to score, so for them only blocks and leaks are measured.
 - **Synthetic domain.** The help center, questions and account context are synthetic. Banking77 is real customer wording but short and clean.
 - **Label noise in the PII sets.** gretel's labels came from a NER library plus an LLM judge (its card says some are wrong or missing), which lowers measured precision for any system.
