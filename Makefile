@@ -56,7 +56,7 @@ eval-e2e-live:
 eval-e2e:
 	uv run gateway eval-e2e
 
-# Automated garak scan against a gateway running on localhost:8000 (see garak/README.md).
+# Automated garak scan against a gateway running on localhost:8000 (see the comments in garak/run_scan.sh).
 garak:
 	./garak/run_scan.sh
 

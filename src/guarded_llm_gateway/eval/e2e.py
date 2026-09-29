@@ -30,7 +30,6 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import json
 import random
 import re
 from collections import defaultdict
@@ -51,6 +50,7 @@ from guarded_llm_gateway.corpus import (
 )
 from guarded_llm_gateway.detectors import HFClassifier
 from guarded_llm_gateway.eval.suite import load_attacks
+from guarded_llm_gateway.eval.summary_io import write_summary
 from guarded_llm_gateway.output_rules import contains_canary, filter_links
 from guarded_llm_gateway.paths import RESULTS_DIR, ROOT
 from guarded_llm_gateway.pii import PresidioPii
@@ -333,7 +333,7 @@ def summarize(out_dir: Path = OUT_DIR) -> dict[str, Any]:
             cells[name]["n"] = len(recs)
             cells[name]["answered_by"] = _count(r.meta["stage"] for r in recs)
         summary[config] = cells
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    write_summary(out_dir / "summary.json", summary)
     return summary
 
 

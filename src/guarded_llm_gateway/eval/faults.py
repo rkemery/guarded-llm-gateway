@@ -13,7 +13,6 @@ shortened so a hung call costs 50 ms of wall time instead of seconds.
 from __future__ import annotations
 
 import asyncio
-import json
 from collections import Counter
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -25,6 +24,7 @@ from guarded_llm_gateway.backends import FakeModel, FaultyModel
 from guarded_llm_gateway.config import Settings
 from guarded_llm_gateway.corpus import BM25Index, current_articles, load_articles, load_questions
 from guarded_llm_gateway.eval.detector_report import rate
+from guarded_llm_gateway.eval.summary_io import write_summary
 from guarded_llm_gateway.paths import RESULTS_DIR
 from guarded_llm_gateway.pipeline import Gateway, ModelSlot, Unavailable
 from guarded_llm_gateway.reliability import CircuitBreaker
@@ -131,7 +131,7 @@ async def run_async(out_dir: Path = OUT_DIR) -> dict[str, Any]:
         stamina.set_testing(False)
         stamina.instrumentation.set_on_retry_hooks(hooks)
     out_dir.mkdir(parents=True, exist_ok=True)
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    write_summary(out_dir / "summary.json", summary)
     return summary
 
 

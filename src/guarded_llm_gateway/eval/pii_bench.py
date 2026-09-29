@@ -27,6 +27,7 @@ from llm_eval_harness import EvalRecord, read_records, write_records
 from llm_eval_harness.stats import wilson_interval, wilson_interval_clustered
 
 from guarded_llm_gateway.eval.sources import fetch
+from guarded_llm_gateway.eval.summary_io import write_summary
 from guarded_llm_gateway.paths import RESULTS_DIR
 from guarded_llm_gateway.pii import (
     REDACT_ENTITIES,
@@ -234,5 +235,5 @@ def summarize(out_dir: Path = OUT_DIR) -> dict[str, Any]:
                     ]
                     cells[cat]["recall_checksum_valid"] = _rate(valid)
             summary[name][dataset] = {"docs": len(recs), "entities": cells}
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    write_summary(out_dir / "summary.json", summary)
     return summary

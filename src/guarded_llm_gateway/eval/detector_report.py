@@ -30,6 +30,7 @@ from llm_eval_harness.stats import Interval, wilson_interval, wilson_interval_cl
 
 from guarded_llm_gateway.config import THRESHOLDS_FILE
 from guarded_llm_gateway.eval.suite import load_attacks
+from guarded_llm_gateway.eval.summary_io import write_summary
 from guarded_llm_gateway.paths import RESULTS_DIR
 
 DETECTORS = ("piguard", "deberta")
@@ -265,5 +266,5 @@ def run(scores_dir: Path = SCORES_DIR, thresholds_file: Path = THRESHOLDS_FILE) 
         "dev_tpr": selection,
         "test": evaluate(items, tuned),
     }
-    (scores_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    write_summary(scores_dir / "summary.json", summary)
     return summary

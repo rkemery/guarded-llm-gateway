@@ -19,7 +19,6 @@ Output-side layers need real model replies and are measured in eval-e2e.
 from __future__ import annotations
 
 import asyncio
-import json
 import random
 from collections import defaultdict
 from dataclasses import replace
@@ -35,6 +34,7 @@ from guarded_llm_gateway.corpus import BM25Index, current_articles, load_article
 from guarded_llm_gateway.detectors import HFClassifier
 from guarded_llm_gateway.eval.detector_report import rate
 from guarded_llm_gateway.eval.suite import load_attacks, load_benign
+from guarded_llm_gateway.eval.summary_io import write_summary
 from guarded_llm_gateway.paths import RESULTS_DIR
 from guarded_llm_gateway.pii import PresidioPii
 from guarded_llm_gateway.pipeline import Gateway, ModelSlot
@@ -172,7 +172,7 @@ def summarize(out_dir: Path = OUT_DIR) -> dict[str, Any]:
                 "p95_ms": float(np.percentile(values, 95)),
             }
     summary = {"groups": by_group, "latency": latency}
-    (out_dir / "summary.json").write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
+    write_summary(out_dir / "summary.json", summary)
     return summary
 
 

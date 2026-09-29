@@ -4,7 +4,12 @@ A FastAPI gateway in front of a support assistant for a fictional neobank, Tallo
 
 ## Results
 
-The detector, PII, latency and fault-injection numbers below were produced on CPU in this repo. The end-to-end run and the garak scan called live Azure models (commands under [Cost](#cost-of-a-full-live-run)). `make demo` regenerates every table from the committed per-item records, with no keys.
+**Findings.**
+- PIGuard alone catches 86.9% of untransformed direct injections at a 1% false positive rate on dev, and flags 0.1% of real banking questions. Adding a second detector made it worse at the same false positive budget.
+- Its high catch rate on base64 and leetspeak attacks comes from the format: it flags the same transforms of benign questions almost every time.
+- The end-to-end run hit a floor. With or without the gateway's guards, gpt-6-luna leaked nothing on the 448 public attacks, so that run can't rank the layers.
+
+The detector, PII, latency and fault-injection numbers below were produced on CPU in this repo. The end-to-end run and the garak scan called live Azure models (commands under [Cost](#cost-of-a-full-live-run)). `make demo` regenerates every table with no keys, from the committed per-item records and, for garak, from the committed summary (the raw garak report holds its offensive payload strings and is not committed).
 
 <!-- results:start -->
 **Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split (1396 benign prompts, 133 benign documents), every rate below on the held-out test split. Wilson 95% CIs, attack CIs clustered by payload group. Direct injections and JBB requests are untransformed here. The transform table further down has the encoded variants.
