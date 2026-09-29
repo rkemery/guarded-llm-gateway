@@ -31,3 +31,9 @@ jobs:
       - name: Test
         # Tests marked `download` (Hugging Face models) are skipped by default.
         run: uv run pytest -q
+      - name: Demo leaves the README current
+        # Offline: recomputes every table from committed records. Only README.md is
+        # checked, since summary floats can differ in the last digit across platforms.
+        run: |
+          uv run gateway demo
+          git diff --exit-code README.md
