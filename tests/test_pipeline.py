@@ -287,6 +287,9 @@ class Raising:
             {"code": None, "innererror": {"code": "ResponsibleAIPolicyViolation"}},
         ),
         ProviderError(400, "Your request was flagged as violating our usage policy", {}),
+        # The codes gpt-6-luna returned in the live end-to-end run.
+        ProviderError(400, "Flagged", {"code": "cyber_policy", "type": "invalid_request"}),
+        ProviderError(400, "Flagged", {"code": "bio_policy", "type": "invalid_request_error"}),
     ],
 )
 def test_provider_refusal_ends_the_request_without_fallback(make_gateway, error) -> None:

@@ -91,11 +91,19 @@ def is_content_filter(exc: BaseException) -> bool:
 
 # Policy codes a provider puts on a 400 when it refuses the prompt itself. OpenAI uses
 # `invalid_prompt` and `content_policy_violation`, and Azure nests
-# `ResponsibleAIPolicyViolation` under `innererror`. Compared lowercased.
+# `ResponsibleAIPolicyViolation` under `innererror`. gpt-6-luna on Foundry returned
+# `cyber_policy` and `bio_policy` in the live run, so any code ending in `_policy`
+# counts too. Compared lowercased.
 _REFUSAL_CODES = frozenset(
     {"invalid_prompt", "content_policy_violation", "responsibleaipolicyviolation"}
 )
-_REFUSAL_MESSAGES = ("content management policy", "usage policy", "usage policies")
+_REFUSAL_CODE_SUFFIX = "_policy"
+_REFUSAL_MESSAGES = (
+    "content management policy",
+    "usage policy",
+    "usage policies",
+    "this content was flagged",
+)
 _DETAIL_CHARS = 200
 
 
@@ -126,7 +134,8 @@ def is_provider_refusal(exc: BaseException) -> bool:
     ):
         return True
     codes = {getattr(exc, "code", None), body.get("code"), inner.get("code")}
-    if {str(c).lower() for c in codes if c} & _REFUSAL_CODES:
+    lowered = {str(c).lower() for c in codes if c}
+    if lowered & _REFUSAL_CODES or any(c.endswith(_REFUSAL_CODE_SUFFIX) for c in lowered):
         return True
     message = str(getattr(exc, "message", None) or exc).lower()
     return any(marker in message for marker in _REFUSAL_MESSAGES)
