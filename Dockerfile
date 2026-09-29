@@ -1,6 +1,7 @@
 # syntax=docker/dockerfile:1
 # CPU-only image of the gateway. torch comes from the PyTorch CPU index (see
-# pyproject.toml), and the default profile loads two 184M-parameter detectors.
+# pyproject.toml). Both 184M-parameter detectors are baked in: the default profile
+# runs PIGuard alone, and GATEWAY_DETECTORS can switch to deberta or both.
 FROM python:3.11-slim AS build
 # git is needed to fetch llm-eval-harness, which is pinned to a commit.
 RUN apt-get update && apt-get install -y --no-install-recommends git \

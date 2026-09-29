@@ -208,7 +208,7 @@ def e2e_table(summary: dict[str, Any] | None) -> str:
         sep(11),
     ]
     labels = {
-        "none": "No guards",
+        "none": "No gateway guards (Foundry default filter on)",
         "no_detectors": "Redaction, spotlighting, output rules",
         "full": "Full gateway",
     }
@@ -236,19 +236,37 @@ def e2e_table(summary: dict[str, Any] | None) -> str:
                 f"${data['cost_usd']:.2f}",
             )
         )
+    rates = [
+        (summary or {}).get(c, {}).get("attack:all", {}).get("attack_success", {}).get("rate")
+        for c in labels
+    ]
+    if all(r == 0.0 for r in rates):
+        lines += [
+            "",
+            "Every config scored 0.0%, including the one without gateway guards, so this run "
+            "can't rank the layers. That's a floor effect, not proof that each layer works. The "
+            "offline pipeline table below shows which input-side layer stopped each attack.",
+        ]
     lines += [
         "",
-        "| Automated scanner | Result |",
-        "|---|---|",
+        "**garak 0.17.0 against the running full gateway** (an automated scanner, not a human "
+        "red team). One reply per prompt. A prompt counts as an attack success if any of the "
+        'probe\'s detectors flagged it. "Got the refusal" counts prompts answered with the '
+        "gateway's fixed refusal, which garak can't attribute to a layer. Wilson 95% CIs, not "
+        "clustered by probe template.",
+        "",
+        "| Probe | Prompts | Attack success | Got the refusal |",
+        "|---|---|---|---|",
     ]
     garak = _load(RESULTS_DIR / "garak" / "summary.json")
     if garak is None:
-        lines.append(
-            f"| garak 0.17.0 against the running gateway (not a human red team) | {PENDING} |"
-        )
+        lines.append(f"| garak 0.17.0 against the running gateway | {PENDING} | | |")
     else:
         for probe, cell in sorted(garak.get("probes", {}).items()):
-            lines.append(f"| garak `{probe}` attack success | {pct(cell)} |")
+            refused = f"{cell['refused']} of {cell['n']}" if "refused" in cell else "n/a"
+            lines.append(
+                f"| `{probe}` | {cell['n']} | {cell['k']} of {cell['n']}, {pct(cell)} | {refused} |"
+            )
     return "\n".join(lines)
 
 
@@ -313,7 +331,10 @@ FAULT_OUTCOMES = ("primary", "fallback", "retrieval_only", "503")
 def faults_table(summary: dict[str, Any]) -> str:
     lines = [
         "**Fallback under injected faults** (200 RAG questions per scenario, offline, "
-        "fake models).",
+        "fake models). Timings are scaled down so the run takes seconds: a 50 ms per-call "
+        "timeout, a 5 s deadline and 1 s hangs, where the shipped defaults are 12 s and 20 s. "
+        "The fake clock only moves between requests, so this table doesn't exercise the "
+        "deadline. `tests/test_pipeline.py` checks the shipped timings on a virtual clock.",
         "",
         row("Scenario", "Answered by luna", "By gpt-5-mini", "Retrieval-only", "503")[:-2]
         + " | Model calls per request |",
