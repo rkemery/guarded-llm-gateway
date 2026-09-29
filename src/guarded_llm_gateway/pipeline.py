@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import json
 import re
 import time
 import unicodedata
@@ -598,9 +597,3 @@ class Gateway:
         )
         result.citations = [a.article_id for a in hits]
         self.metrics.fallbacks.labels("retrieval_only").inc()
-
-
-def result_to_json(result: GatewayResult) -> str:
-    return json.dumps(
-        result.__dict__, default=lambda o: o.model_dump() if hasattr(o, "model_dump") else str(o)
-    )

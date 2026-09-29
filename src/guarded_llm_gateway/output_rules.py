@@ -24,7 +24,7 @@ import json
 import re
 import unicodedata
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from urllib.parse import urlsplit
 
 from pydantic import ValidationError
@@ -215,11 +215,9 @@ def pii_echo_spans(
 class OutputVerdict:
     answer: str
     citations: list[str]
-    escalate: bool
     blocked_by: str | None = None
     links_removed: int = 0
     pii_redacted: int = 0
-    notes: list[str] = field(default_factory=list)
 
 
 def apply_output_rules(
@@ -234,20 +232,13 @@ def apply_output_rules(
 ) -> OutputVerdict:
     citations = [c for c in answer.citations if c in set(retrieved_ids)]
     if contains_canary(raw_reply, canary) or contains_canary(answer.answer, canary):
-        return OutputVerdict("", [], False, blocked_by="output_canary")
+        return OutputVerdict("", [], blocked_by="output_canary")
     links = filter_links(answer.answer, allowed_domains)
     spans = pii_echo_spans(links.text, context_values, allowed_pii)
     text = links.text
     for span in sorted(spans, key=lambda s: s.start, reverse=True):
         label = "PII" if span.entity == "ECHO" else span.entity
         text = f"{text[: span.start]}<{label}>{text[span.end :]}"
-    verdict = OutputVerdict(
-        text.strip(),
-        citations,
-        answer.escalate,
-        links_removed=links.removed,
-        pii_redacted=len(spans),
+    return OutputVerdict(
+        text.strip(), citations, links_removed=links.removed, pii_redacted=len(spans)
     )
-    if len(citations) != len(answer.citations):
-        verdict.notes.append(f"dropped {len(answer.citations) - len(citations)} unknown citations")
-    return verdict

@@ -308,7 +308,3 @@ class PromptShields:
 
     async def aclose(self) -> None:
         await self._client.aclose()
-
-
-def build_detectors(names: Sequence[str], torch_threads: int | None = None) -> list[HFClassifier]:
-    return [HFClassifier(name, torch_threads=torch_threads) for name in names]
