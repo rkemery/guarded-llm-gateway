@@ -1,14 +1,14 @@
-"""PII detection and redaction: a regex-only detector and Presidio with our checksum recognizers.
+"""PII detection and redaction: a regex-only detector and Presidio with my checksum recognizers.
 
 Both detectors share the Luhn and IBAN (ISO 13616 mod-97) checks below, so the
 PII benchmark isolates what Presidio's NER and context scoring add on top of
-plain patterns. Presidio ships its own card and IBAN recognizers. We replace
-them with ours so the two paths run one implementation that the tests cover.
+plain patterns. Presidio ships its own card and IBAN recognizers. I replace
+them with mine so the two paths run one implementation that the tests cover.
 
 Runtime NER uses spaCy `en_core_web_sm` (12 MB, CPU). Presidio's default is
 `en_core_web_lg` (about 400 MB), which would triple the Docker image for a
-model that only feeds PERSON and LOCATION. The PII benchmark reports what the
-small model misses.
+model that only feeds PERSON. The PII benchmark reports what the small
+model misses.
 """
 
 from __future__ import annotations
@@ -200,7 +200,7 @@ def _checksum_recognizers() -> list[Any]:
 
 
 class PresidioPii:
-    """Presidio AnalyzerEngine on spaCy, with our card and IBAN recognizers swapped in."""
+    """Presidio AnalyzerEngine on spaCy, with my card and IBAN recognizers swapped in."""
 
     def __init__(
         self,

@@ -53,7 +53,7 @@ recall on them.
 - PIGuard was trained on the deepset train split. The InjecGuard paper (arXiv
   2410.22770, Tables 4 and 5) lists `prompt-injections` from Deepset with 343
   benign and 203 injection samples, which add up to the 546 rows of that split.
-  Most deepset rows in our suite come from the train split (`source_row` starts
+  Most deepset rows in this suite come from the train split (`source_row` starts
   with `train:`), so PIGuard's recall on the deepset rows is optimistic. The
   same paper introduced NotInject as an evaluation-only set.
 - ProtectAI's v2 card lists its training datasets. None of the sources above
