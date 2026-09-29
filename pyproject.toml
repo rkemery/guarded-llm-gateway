@@ -1,0 +1,68 @@
+[project]
+name = "guarded-llm-gateway"
+version = "0.1.0"
+description = "FastAPI gateway that guards a bank support assistant: PII redaction, injection detection, spotlighting, output rules, rate limits and a fallback chain, measured on public attack sets."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Richard Kemery" }]
+requires-python = ">=3.11"
+dependencies = [
+    "llm-eval-harness[azure]",
+    "fastapi>=0.141.1",
+    "uvicorn>=0.54.0",
+    "pydantic>=2.13.5",
+    "slowapi>=0.1.10",
+    "prometheus-client>=0.26.0",
+    "presidio-analyzer>=2.2.364",
+    "spacy>=3.8.16,<3.9",
+    "en-core-web-sm",
+    "stamina>=26.1.0",
+    "httpx>=0.28.1",
+    "torch>=2.14.0",
+    "transformers>=5.17.0",
+    "numpy>=1.26",
+]
+
+[project.scripts]
+gateway = "guarded_llm_gateway.cli:main"
+
+[build-system]
+requires = ["uv_build>=0.8.17,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=9.1.1",
+    "ruff>=0.16.9",
+]
+eval = [
+    "pyarrow>=25.0.1",
+]
+
+[tool.uv]
+default-groups = ["dev", "eval"]
+
+[tool.uv.sources]
+llm-eval-harness = { git = "https://github.com/rkemery/llm-eval-harness", tag = "v0.1.0" }
+torch = [{ index = "pytorch-cpu" }]
+en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "PT", "C4", "RET", "PTH"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra -m 'not download'"
+markers = [
+    "download: needs a Hugging Face model or dataset download (skipped by default, run with -m download)",
+]

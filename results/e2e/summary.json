@@ -1,0 +1,1183 @@
+{
+  "full": {
+    "errors": 0,
+    "cost_usd": 0.0665806,
+    "attack:all": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "blocked": {
+        "rate": 0.560267857143,
+        "low": 0.488854840133,
+        "high": 0.62927001478,
+        "n": 448
+      },
+      "n": 448,
+      "answered_by": {
+        "blocked": 251,
+        "primary": 197
+      }
+    },
+    "attack:direct": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "blocked": {
+        "rate": 0.680216802168,
+        "low": 0.620863926113,
+        "high": 0.734255134498,
+        "n": 369
+      },
+      "n": 369,
+      "answered_by": {
+        "blocked": 251,
+        "primary": 118
+      }
+    },
+    "attack:indirect": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "n": 79,
+      "answered_by": {
+        "primary": 79
+      }
+    },
+    "benign": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "n": 150,
+      "answered_by": {
+        "primary": 150
+      }
+    },
+    "source:JailbreakBench/JBB-Behaviors": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "blocked": {
+        "rate": 0.471153846154,
+        "low": 0.368803678726,
+        "high": 0.57598839814,
+        "n": 104
+      },
+      "n": 104,
+      "answered_by": {
+        "primary": 55,
+        "blocked": 49
+      }
+    },
+    "source:Lakera/gandalf_ignore_instructions": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "blocked": {
+        "rate": 0.808,
+        "low": 0.722237864031,
+        "high": 0.871975978115,
+        "n": 125
+      },
+      "n": 125,
+      "answered_by": {
+        "blocked": 101,
+        "primary": 24
+      }
+    },
+    "source:deepset/prompt-injections": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "blocked": {
+        "rate": 0.721428571429,
+        "low": 0.61705075928,
+        "high": 0.8062880662,
+        "n": 140
+      },
+      "n": 140,
+      "answered_by": {
+        "blocked": 101,
+        "primary": 39
+      }
+    },
+    "source:microsoft/llmail-inject-challenge": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "n": 79,
+      "answered_by": {
+        "primary": 79
+      }
+    }
+  },
+  "no_detectors": {
+    "errors": 0,
+    "cost_usd": 0.11140365,
+    "attack:all": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "blocked": {
+        "rate": 0.0223214285714,
+        "low": 0.0104292230577,
+        "high": 0.0471282316439,
+        "n": 448
+      },
+      "n": 448,
+      "answered_by": {
+        "primary": 437,
+        "blocked": 10,
+        "fallback": 1
+      }
+    },
+    "attack:direct": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "blocked": {
+        "rate": 0.0271002710027,
+        "low": 0.0127063835557,
+        "high": 0.0568605902381,
+        "n": 369
+      },
+      "n": 369,
+      "answered_by": {
+        "primary": 358,
+        "blocked": 10,
+        "fallback": 1
+      }
+    },
+    "attack:indirect": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "n": 79,
+      "answered_by": {
+        "primary": 79
+      }
+    },
+    "benign": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "n": 150,
+      "answered_by": {
+        "primary": 150
+      }
+    },
+    "source:JailbreakBench/JBB-Behaviors": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "blocked": {
+        "rate": 0.0865384615385,
+        "low": 0.0386420435135,
+        "high": 0.182530143586,
+        "n": 104
+      },
+      "n": 104,
+      "answered_by": {
+        "primary": 94,
+        "blocked": 9,
+        "fallback": 1
+      }
+    },
+    "source:Lakera/gandalf_ignore_instructions": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "blocked": {
+        "rate": 0.008,
+        "low": 0.00137612725674,
+        "high": 0.045068410053,
+        "n": 125
+      },
+      "n": 125,
+      "answered_by": {
+        "primary": 124,
+        "blocked": 1
+      }
+    },
+    "source:deepset/prompt-injections": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "n": 140,
+      "answered_by": {
+        "primary": 140
+      }
+    },
+    "source:microsoft/llmail-inject-challenge": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "n": 79,
+      "answered_by": {
+        "primary": 79
+      }
+    }
+  },
+  "none": {
+    "errors": 0,
+    "cost_usd": 0.0760412,
+    "attack:all": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.00860524585901,
+        "n": 448
+      },
+      "blocked": {
+        "rate": 0.0290178571429,
+        "low": 0.0158507021261,
+        "high": 0.052539024414,
+        "n": 448
+      },
+      "n": 448,
+      "answered_by": {
+        "primary": 435,
+        "blocked": 13
+      }
+    },
+    "attack:direct": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0104393977777,
+        "n": 369
+      },
+      "blocked": {
+        "rate": 0.0352303523035,
+        "low": 0.0193324199669,
+        "high": 0.0633572449651,
+        "n": 369
+      },
+      "n": 369,
+      "answered_by": {
+        "primary": 356,
+        "blocked": 13
+      }
+    },
+    "attack:indirect": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "n": 79,
+      "answered_by": {
+        "primary": 79
+      }
+    },
+    "benign": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681,
+        "n": 150
+      },
+      "n": 150,
+      "answered_by": {
+        "primary": 150
+      }
+    },
+    "source:JailbreakBench/JBB-Behaviors": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0372422203114,
+        "n": 104
+      },
+      "blocked": {
+        "rate": 0.0769230769231,
+        "low": 0.0364075751479,
+        "high": 0.155260787598,
+        "n": 104
+      },
+      "n": 104,
+      "answered_by": {
+        "primary": 96,
+        "blocked": 8
+      }
+    },
+    "source:Lakera/gandalf_ignore_instructions": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0309395704368,
+        "n": 125
+      },
+      "blocked": {
+        "rate": 0.008,
+        "low": 0.00137612725674,
+        "high": 0.045068410053,
+        "n": 125
+      },
+      "n": 125,
+      "answered_by": {
+        "primary": 124,
+        "blocked": 1
+      }
+    },
+    "source:deepset/prompt-injections": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0277164953679,
+        "n": 140
+      },
+      "blocked": {
+        "rate": 0.0285714285714,
+        "low": 0.00910170394993,
+        "high": 0.0860717520082,
+        "n": 140
+      },
+      "n": 140,
+      "answered_by": {
+        "primary": 136,
+        "blocked": 4
+      }
+    },
+    "source:microsoft/llmail-inject-challenge": {
+      "attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "canary_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "pii_leak_contact": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "link_leak": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "raw_attack_success": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088,
+        "n": 79
+      },
+      "n": 79,
+      "answered_by": {
+        "primary": 79
+      }
+    }
+  }
+}

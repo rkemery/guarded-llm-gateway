@@ -1,0 +1,322 @@
+{
+  "healthy": {
+    "n": 200,
+    "model_calls_per_request": 1.0,
+    "injected": {
+      "primary": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 200,
+      "rate": 1.0,
+      "low": 0.981154673623,
+      "high": 1.0
+    },
+    "fallback": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "retrieval_only": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "primary 30% errors": {
+    "n": 200,
+    "model_calls_per_request": 1.34,
+    "injected": {
+      "primary": {
+        "error": 68,
+        "hang": 0,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 187,
+      "rate": 0.935,
+      "low": 0.891980920701,
+      "high": 0.961623645351
+    },
+    "fallback": {
+      "k": 13,
+      "rate": 0.065,
+      "low": 0.0383763546492,
+      "high": 0.108019079299
+    },
+    "retrieval_only": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "primary 20% hangs": {
+    "n": 200,
+    "model_calls_per_request": 1.195,
+    "injected": {
+      "primary": {
+        "error": 0,
+        "hang": 39,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 193,
+      "rate": 0.965,
+      "low": 0.929529388478,
+      "high": 0.982944457991
+    },
+    "fallback": {
+      "k": 7,
+      "rate": 0.035,
+      "low": 0.0170555420086,
+      "high": 0.0704706115223
+    },
+    "retrieval_only": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "primary 30% malformed JSON": {
+    "n": 200,
+    "model_calls_per_request": 1.34,
+    "injected": {
+      "primary": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 68
+      },
+      "fallback": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 187,
+      "rate": 0.935,
+      "low": 0.891980920701,
+      "high": 0.961623645351
+    },
+    "fallback": {
+      "k": 13,
+      "rate": 0.065,
+      "low": 0.0383763546492,
+      "high": 0.108019079299
+    },
+    "retrieval_only": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "primary down": {
+    "n": 200,
+    "model_calls_per_request": 1.14,
+    "injected": {
+      "primary": {
+        "error": 28,
+        "hang": 0,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 0,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "fallback": {
+      "k": 200,
+      "rate": 1.0,
+      "low": 0.981154673623,
+      "high": 1.0
+    },
+    "retrieval_only": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "primary down, fallback 50% errors": {
+    "n": 200,
+    "model_calls_per_request": 1.345,
+    "injected": {
+      "primary": {
+        "error": 28,
+        "hang": 0,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 120,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "fallback": {
+      "k": 121,
+      "rate": 0.605,
+      "low": 0.535883491593,
+      "high": 0.670158989868
+    },
+    "retrieval_only": {
+      "k": 79,
+      "rate": 0.395,
+      "low": 0.329841010132,
+      "high": 0.464116508407
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "both down": {
+    "n": 200,
+    "model_calls_per_request": 0.28,
+    "injected": {
+      "primary": {
+        "error": 28,
+        "hang": 0,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 28,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "fallback": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "retrieval_only": {
+      "k": 200,
+      "rate": 1.0,
+      "low": 0.981154673623,
+      "high": 1.0
+    },
+    "503": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    }
+  },
+  "both down, retrieval finds nothing": {
+    "n": 200,
+    "model_calls_per_request": 0.0,
+    "injected": {
+      "primary": {
+        "error": 28,
+        "hang": 0,
+        "malformed": 0
+      },
+      "fallback": {
+        "error": 28,
+        "hang": 0,
+        "malformed": 0
+      }
+    },
+    "primary": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "fallback": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "retrieval_only": {
+      "k": 0,
+      "rate": 0.0,
+      "low": 0.0,
+      "high": 0.0188453263773
+    },
+    "503": {
+      "k": 200,
+      "rate": 1.0,
+      "low": 0.981154673623,
+      "high": 1.0
+    }
+  }
+}

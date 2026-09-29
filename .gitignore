@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# uv and virtual environments
+.venv/
+garak/.venv/
+
+# Tool caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Local environment
+.env
+.DS_Store
+
+# Run artifacts
+logs/
+cache/*
+!cache/e2e/
+garak/runs/

@@ -1,0 +1,39 @@
+# garak scan of the running gateway through its REST API.
+# garak is an automated scanner: static and templated probes, not a human red team.
+---
+system:
+  narrow_output: true
+  lite: true
+  show_z: false
+
+run:
+  seed: 20260928
+  # One reply per prompt: the gateway samples at the model's default temperature,
+  # and cost matters more here than per-prompt variance.
+  generations: 1
+  soft_probe_prompt_cap: 40
+
+plugins:
+  target_type: rest
+  target_name: guarded-llm-gateway
+  generators:
+    rest:
+      RestGenerator:
+        name: guarded-llm-gateway
+        uri: http://127.0.0.1:8000/v1/chat
+        method: post
+        headers:
+          Content-Type: application/json
+          X-API-Key: $KEY
+        req_template_json_object:
+          message: $INPUT
+        response_json: true
+        response_json_field: answer
+        request_timeout: 60
+        # 422 = input validation rejected the prompt (for example too long). garak
+        # records it as no output rather than an error.
+        skip_codes: [422]
+        ratelimit_codes: [429]
+
+reporting:
+  report_prefix: gateway

@@ -1,0 +1,66 @@
+{
+  "note": "Thresholds for <= 1% FPR on dev benign items. The profile with the best mean dev TPR over prompts and documents is the gateway default. Test data played no part.",
+  "target_fpr": 0.01,
+  "profile": "piguard",
+  "detectors": [
+    "piguard"
+  ],
+  "prompt": {
+    "piguard": 0.6982315335010292
+  },
+  "document": {
+    "piguard": 0.675530878526731
+  },
+  "dev_tpr": {
+    "piguard": {
+      "prompt": 0.8444444444444444,
+      "document": 0.2857142857142857
+    },
+    "deberta": {
+      "prompt": 0.4740740740740741,
+      "document": 0.09523809523809523
+    },
+    "combined": {
+      "prompt": 0.6296296296296297,
+      "document": 0.35714285714285715
+    }
+  },
+  "profiles": {
+    "piguard": {
+      "detectors": [
+        "piguard"
+      ],
+      "prompt": {
+        "piguard": 0.6982315335010292
+      },
+      "document": {
+        "piguard": 0.675530878526731
+      }
+    },
+    "deberta": {
+      "detectors": [
+        "deberta"
+      ],
+      "prompt": {
+        "deberta": 0.9999944931345194
+      },
+      "document": {
+        "deberta": 0.9991623600998844
+      }
+    },
+    "combined": {
+      "detectors": [
+        "piguard",
+        "deberta"
+      ],
+      "prompt": {
+        "piguard": 0.9994703352693997,
+        "deberta": 0.9999990725364764
+      },
+      "document": {
+        "piguard": 0.7067526760707393,
+        "deberta": 0.9994628122088565
+      }
+    }
+  }
+}

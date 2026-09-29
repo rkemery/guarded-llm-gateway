@@ -1,0 +1,235 @@
+{
+  "groups": {
+    "attack:direct:harmful_request": {
+      "n": 54,
+      "blocked": {
+        "rate": 0.425925925926,
+        "low": 0.303318240199,
+        "high": 0.55837266174
+      },
+      "caught_prompt_detector": {
+        "rate": 0.425925925926,
+        "low": 0.303318240199,
+        "high": 0.55837266174
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0664135880909
+      },
+      "docs_dropped": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0664135880909
+      }
+    },
+    "attack:direct:harmful_request, transformed": {
+      "n": 50,
+      "blocked": {
+        "rate": 0.5,
+        "low": 0.347647847598,
+        "high": 0.652352152402
+      },
+      "caught_prompt_detector": {
+        "rate": 0.5,
+        "low": 0.347647847598,
+        "high": 0.652352152402
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0928447133664
+      },
+      "docs_dropped": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0928447133664
+      }
+    },
+    "attack:direct:injection": {
+      "n": 130,
+      "blocked": {
+        "rate": 0.861538461538,
+        "low": 0.791735454307,
+        "high": 0.910588032214
+      },
+      "caught_prompt_detector": {
+        "rate": 0.861538461538,
+        "low": 0.791735454307,
+        "high": 0.910588032214
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0287015611944
+      },
+      "docs_dropped": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0287015611944
+      }
+    },
+    "attack:direct:injection, transformed": {
+      "n": 135,
+      "blocked": {
+        "rate": 0.666666666667,
+        "low": 0.579331245135,
+        "high": 0.743886100493
+      },
+      "caught_prompt_detector": {
+        "rate": 0.666666666667,
+        "low": 0.579331245135,
+        "high": 0.743886100493
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0303479631165
+      },
+      "docs_dropped": {
+        "rate": 0.0,
+        "low": 3.46944695195e-18,
+        "high": 0.0303479631165
+      }
+    },
+    "attack:indirect:injection": {
+      "n": 79,
+      "blocked": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088
+      },
+      "caught_prompt_detector": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0543800554088
+      },
+      "docs_dropped": {
+        "rate": 0.316455696203,
+        "low": 0.184126623798,
+        "high": 0.487107615717
+      },
+      "poisoned_doc_retrieved": {
+        "rate": 0.772151898734,
+        "low": 0.645315636707,
+        "high": 0.863243275498
+      },
+      "caught_document_detector": {
+        "rate": 0.303797468354,
+        "low": 0.168993666086,
+        "high": 0.483560295838
+      }
+    },
+    "benign:banking77": {
+      "n": 150,
+      "blocked": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      },
+      "caught_prompt_detector": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      },
+      "docs_dropped": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      }
+    },
+    "benign:notinject": {
+      "n": 197,
+      "blocked": {
+        "rate": 0.111675126904,
+        "low": 0.0749140891423,
+        "high": 0.163291006069
+      },
+      "caught_prompt_detector": {
+        "rate": 0.111675126904,
+        "low": 0.0749140891423,
+        "high": 0.163291006069
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 0.0,
+        "high": 0.0191268219383
+      },
+      "docs_dropped": {
+        "rate": 0.010152284264,
+        "low": 0.00278855207505,
+        "high": 0.0362544765244
+      }
+    },
+    "benign:tallowbrook_rag": {
+      "n": 150,
+      "blocked": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      },
+      "caught_prompt_detector": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      },
+      "caught_input_validation": {
+        "rate": 0.0,
+        "low": 1.73472347598e-18,
+        "high": 0.0249702443681
+      },
+      "docs_dropped": {
+        "rate": 0.0466666666667,
+        "low": 0.0227865491613,
+        "high": 0.0931864723991
+      }
+    }
+  },
+  "latency": {
+    "input_validation": {
+      "n": 40,
+      "p50_ms": 0.0141764994623,
+      "p95_ms": 0.0193886511624
+    },
+    "pii_redaction": {
+      "n": 40,
+      "p50_ms": 6.17387399961,
+      "p95_ms": 7.75572164948
+    },
+    "prompt_detector": {
+      "n": 40,
+      "p50_ms": 105.497349499,
+      "p95_ms": 115.2249213
+    },
+    "retrieval": {
+      "n": 40,
+      "p50_ms": 0.30438649992,
+      "p95_ms": 0.393585649999
+    },
+    "document_detector": {
+      "n": 40,
+      "p50_ms": 677.2598505,
+      "p95_ms": 797.620452001
+    },
+    "spotlight": {
+      "n": 40,
+      "p50_ms": 0.159349499882,
+      "p95_ms": 0.179710100019
+    },
+    "output_rules": {
+      "n": 40,
+      "p50_ms": 0.0903199997992,
+      "p95_ms": 0.114462349757
+    }
+  }
+}

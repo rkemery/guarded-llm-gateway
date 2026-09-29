@@ -1,0 +1,23 @@
+{
+  "dataset": "Tallowbrook Neobank Support (synthetic)",
+  "license": "CC-BY-4.0",
+  "source_repo": "rkemery/rag-support-assistant, tag tallowbrook-v0.1 (branch claude/tallowbrook-dataset)",
+  "source_commit": "3c72058e8cc7d5dd6e224ecdec7b814341a3d48f",
+  "files": [
+    {
+      "path": "articles.jsonl",
+      "source_path": "corpus/articles.jsonl",
+      "sha256": "e03b083dd9afe8c69b0fb054153c5364127d35dcd59c61e6879de11196bae42c"
+    },
+    {
+      "path": "questions_dev.jsonl",
+      "source_path": "rag/questions_dev.jsonl",
+      "sha256": "ddb58731b06ee147217f37eef1b6e647bf2c963198a5bd59e8a528c6afbb2f17"
+    },
+    {
+      "path": "questions_test.jsonl",
+      "source_path": "rag/questions_test.jsonl",
+      "sha256": "74fc6d2ddfaef35be902a9b9ea71a00909fdf63516418dad3ea9e3dde05c424e"
+    }
+  ]
+}
