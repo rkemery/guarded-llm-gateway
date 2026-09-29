@@ -30,7 +30,10 @@ from llm_eval_harness.client import DEFAULT_PRICES, cost_usd
 from guarded_llm_gateway.backends import (
     AsyncModel,
     ContentFiltered,
+    ProviderRefused,
+    error_detail,
     is_content_filter,
+    is_provider_refusal,
     is_retryable,
 )
 from guarded_llm_gateway.config import Settings
@@ -327,15 +330,25 @@ class Gateway:
                 async with asyncio.timeout(remaining):
                     reply, answer = await self._ask(slot, system, user, result)
             except Exception as exc:
+                # A provider refusal ends the request: the model is up, so it is not a
+                # breaker failure, and sending the refused prompt to the next model would
+                # hand an attacker a second try and let refusals open the breaker.
                 if is_content_filter(exc):
                     slot.breaker.record_success()
-                    timer.add(f"model:{slot.name}", "content_filter", started)
+                    timer.add(f"model:{slot.name}", "content_filter", started, error_detail(exc))
                     raise ContentFiltered(str(exc)) from exc
-                kind = "schema" if isinstance(exc, SchemaError) else type(exc).__name__
+                if is_provider_refusal(exc):
+                    slot.breaker.record_success()
+                    timer.add(f"model:{slot.name}", "provider_refusal", started, error_detail(exc))
+                    raise ProviderRefused(error_detail(exc)) from exc
+                schema = isinstance(exc, SchemaError)
+                kind = "schema" if schema else type(exc).__name__
                 slot.breaker.record_failure()
                 self.metrics.model_errors.labels(slot.name, kind).inc()
                 self.metrics.breaker_state.labels(slot.name).set(int(slot.breaker.state))
-                timer.add(f"model:{slot.name}", "failed", started, kind)
+                timer.add(
+                    f"model:{slot.name}", "failed", started, kind if schema else error_detail(exc)
+                )
                 continue
             slot.breaker.record_success()
             self.metrics.breaker_state.labels(slot.name).set(int(BreakerState.CLOSED))
@@ -458,6 +471,9 @@ class Gateway:
             outcome = await self._model_stage(system, user, result, timer, deadline_at)
         except ContentFiltered:
             result.blocked_by = "azure_content_filter"
+            return
+        except ProviderRefused:
+            result.blocked_by = "provider_refusal"
             return
         finally:
             if self.budget is not None:

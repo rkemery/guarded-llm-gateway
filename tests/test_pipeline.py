@@ -9,8 +9,8 @@ import stamina
 from llm_eval_harness import ModelRequest, ModelResponse
 
 from guarded_llm_gateway.backends import FakeModel, FaultyModel, TransientModelError
-from guarded_llm_gateway.pipeline import GuardConfig, Unavailable, normalize_input
-from guarded_llm_gateway.reliability import BudgetExceeded, TokenBudget
+from guarded_llm_gateway.pipeline import REFUSAL, GuardConfig, Unavailable, normalize_input
+from guarded_llm_gateway.reliability import BreakerState, BudgetExceeded, TokenBudget
 
 from .conftest import CANARY, FakeClock, keyword_detector, run
 
@@ -189,6 +189,70 @@ def test_content_filter_is_its_own_layer(make_gateway) -> None:
     result = run(gateway.handle("How do I freeze my card?"))
     assert result.blocked_by == "azure_content_filter"
     assert gateway.models[1].backend.calls == []
+
+
+class ProviderError(Exception):
+    """Shaped like an openai APIStatusError: status_code, code, type, body and message."""
+
+    def __init__(self, status: int, message: str, body: dict | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status
+        self.message = message
+        self.body = body or {}
+        self.code = self.body.get("code")
+        self.type = self.body.get("type")
+
+
+class Raising:
+    def __init__(self, error: Exception) -> None:
+        self.error = error
+        self.calls = 0
+
+    async def complete(self, request: ModelRequest) -> ModelResponse:
+        self.calls += 1
+        raise self.error
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        ProviderError(400, "Invalid prompt", {"code": "invalid_prompt", "type": "invalid_request"}),
+        ProviderError(
+            400,
+            "The prompt was blocked",
+            {"code": None, "innererror": {"code": "ResponsibleAIPolicyViolation"}},
+        ),
+        ProviderError(400, "Your request was flagged as violating our usage policy", {}),
+    ],
+)
+def test_provider_refusal_ends_the_request_without_fallback(make_gateway, error) -> None:
+    primary = Raising(error)
+    gateway = make_gateway(models=[primary, FakeModel()])
+    for _ in range(5):  # more than the breaker threshold of 3
+        result = run(gateway.handle("How do I freeze my card?"))
+        assert result.blocked_by == "provider_refusal"
+        assert result.answer == REFUSAL
+    assert gateway.models[1].backend.calls == []
+    assert gateway.models[0].breaker.state is BreakerState.CLOSED
+    event = next(e for e in result.layers if e.layer == "model:gpt-6-luna")
+    assert event.action == "provider_refusal"
+    assert "status=400" in event.detail
+    # a benign request after the refusals still goes to the primary
+    gateway.models[0].backend = FakeModel()
+    assert run(gateway.handle("How do I freeze my card?")).model == "gpt-6-luna"
+
+
+def test_other_4xx_errors_still_fail_over_and_log_the_code(make_gateway) -> None:
+    bad_param = ProviderError(
+        400, "Unsupported parameter: " + "x" * 500, {"code": "unsupported_parameter"}
+    )
+    gateway = make_gateway(models=[Raising(bad_param), FakeModel()])
+    result = run(gateway.handle("How do I freeze my card?"))
+    assert result.model == "gpt-5-mini"
+    event = next(e for e in result.layers if e.layer == "model:gpt-6-luna")
+    assert event.action == "failed"
+    assert event.detail.startswith("ProviderError status=400 code=unsupported_parameter")
+    assert len(event.detail) < 300
 
 
 def test_token_budget_is_enforced_per_key(make_gateway) -> None:

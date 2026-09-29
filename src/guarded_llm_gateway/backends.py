@@ -38,6 +38,10 @@ class ContentFiltered(RuntimeError):
     """The provider's content filter refused the prompt or the completion."""
 
 
+class ProviderRefused(RuntimeError):
+    """The provider refused the prompt with a policy error other than Azure's content filter."""
+
+
 class ThreadedClient:
     """Runs a synchronous harness `ModelClient` in a worker thread.
 
@@ -83,6 +87,67 @@ def is_retryable(exc: Exception) -> bool:
 def is_content_filter(exc: BaseException) -> bool:
     """Azure returns HTTP 400 with error code `content_filter` when its filter blocks a prompt."""
     return isinstance(exc, ContentFiltered) or getattr(exc, "code", None) == "content_filter"
+
+
+# Policy codes a provider puts on a 400 when it refuses the prompt itself. OpenAI uses
+# `invalid_prompt` and `content_policy_violation`, and Azure nests
+# `ResponsibleAIPolicyViolation` under `innererror`. Compared lowercased.
+_REFUSAL_CODES = frozenset(
+    {"invalid_prompt", "content_policy_violation", "responsibleaipolicyviolation"}
+)
+_REFUSAL_MESSAGES = ("content management policy", "usage policy", "usage policies")
+_DETAIL_CHARS = 200
+
+
+def _error_body(exc: BaseException) -> dict[str, Any]:
+    body = getattr(exc, "body", None)
+    return body if isinstance(body, dict) else {}
+
+
+def _inner_error(body: dict[str, Any]) -> dict[str, Any]:
+    inner = body.get("innererror") or body.get("inner_error")
+    return inner if isinstance(inner, dict) else {}
+
+
+def is_provider_refusal(exc: BaseException) -> bool:
+    """A 400 whose code, body or message says the provider's policy refused the prompt.
+
+    Any other 4xx (a bad parameter, an unknown deployment) is a configuration
+    error and still fails over to the next model.
+    """
+    if isinstance(exc, ProviderRefused):
+        return True
+    if getattr(exc, "status_code", None) != 400:
+        return False
+    body = _error_body(exc)
+    inner = _inner_error(body)
+    if any(
+        k in d for d in (body, inner) for k in ("content_filter_result", "content_filter_results")
+    ):
+        return True
+    codes = {getattr(exc, "code", None), body.get("code"), inner.get("code")}
+    if {str(c).lower() for c in codes if c} & _REFUSAL_CODES:
+        return True
+    message = str(getattr(exc, "message", None) or exc).lower()
+    return any(marker in message for marker in _REFUSAL_MESSAGES)
+
+
+def error_detail(exc: BaseException) -> str:
+    """The exception class plus the provider's status, code, type and a trimmed message."""
+    parts = [type(exc).__name__]
+    inner_code = _inner_error(_error_body(exc)).get("code")
+    for label, value in (
+        ("status", getattr(exc, "status_code", None)),
+        ("code", getattr(exc, "code", None)),
+        ("type", getattr(exc, "type", None)),
+        ("inner", inner_code),
+    ):
+        if value is not None:
+            parts.append(f"{label}={value}")
+    message = " ".join(str(getattr(exc, "message", None) or exc).split())
+    if message:
+        parts.append(message[:_DETAIL_CHARS])
+    return " ".join(parts)
 
 
 # ---------------------------------------------------------------- fake model
