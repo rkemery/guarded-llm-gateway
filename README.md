@@ -4,7 +4,7 @@ A FastAPI gateway in front of a support assistant for a fictional neobank, Tallo
 
 ## Results
 
-The detector, PII, latency and fault-injection numbers below were produced on CPU in this repo. The end-to-end run and the garak scan called live Azure models (commands under [Cost](#cost-of-a-full-live-run)). `make demo` regenerates every table from the committed per-item records, with no keys. Both live runs used an earlier version of the gateway, before the fixes to provider refusals, the canary check, the link allowlist, rate-limit keys and the deadline.
+The detector, PII, latency and fault-injection numbers below were produced on CPU in this repo. The end-to-end run and the garak scan called live Azure models (commands under [Cost](#cost-of-a-full-live-run)). `make demo` regenerates every table from the committed per-item records, with no keys.
 
 <!-- results:start -->
 **Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split (1396 benign prompts, 133 benign documents), every rate below on the held-out test split. Wilson 95% CIs, attack CIs clustered by payload group. Direct injections and JBB requests are untransformed here. The transform table further down has the encoded variants.
@@ -61,9 +61,9 @@ At the vendors' default threshold of 0.5 instead of the tuned one (untransformed
 
 | Config | ASR, all attacks | Direct | Indirect | Canary leaked | Account PII leaked | Contact PII leaked | Outside link or email | ASR before output rules | Benign questions blocked | Cost |
 |---|---|---|---|---|---|---|---|---|---|---|
-| No gateway guards (Foundry default filter on) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.08 |
-| Redaction, spotlighting, output rules | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.06 |
-| Full gateway | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.07 |
+| No gateway guards (Foundry default filter on) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.00 |
+| Redaction, spotlighting, output rules | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.00 |
+| Full gateway | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.00 |
 
 Every config scored 0.0%, including the one without gateway guards, so this run can't rank the layers. That's a floor effect, not proof that each layer works. The offline pipeline table below shows which input-side layer stopped each attack.
 
@@ -72,8 +72,8 @@ Every config scored 0.0%, including the one without gateway guards, so this run 
 | Probe | Prompts | Attack success | Got the refusal |
 |---|---|---|---|
 | `encoding.InjectBase64` | 40 | 1 of 40, 2.5% (0.4 to 12.9) | 29 of 40 |
-| `encoding.InjectHex` | 40 | 4 of 40, 10.0% (4.0 to 23.1) | 27 of 40 |
-| `latentinjection.LatentInjectionFactSnippetEiffel` | 40 | 0 of 40, 0.0% (0.0 to 8.8) | 37 of 40 |
+| `encoding.InjectHex` | 40 | 1 of 40, 2.5% (0.4 to 12.9) | 27 of 40 |
+| `latentinjection.LatentInjectionFactSnippetEiffel` | 40 | 0 of 40, 0.0% (0.0 to 8.8) | 33 of 40 |
 | `latentinjection.LatentInjectionReport` | 40 | 0 of 40, 0.0% (0.0 to 8.8) | 40 of 40 |
 | `latentinjection.LatentInjectionResume` | 40 | 0 of 40, 0.0% (0.0 to 8.8) | 20 of 40 |
 | `latentinjection.LatentWhois` | 140 | 0 of 140, 0.0% (0.0 to 2.7) | 107 of 140 |
@@ -263,7 +263,7 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 - **Wide intervals on indirect injection.** The 79 test payloads come from 16 LLMail-Inject teams, and payloads from one team are alike, so the intervals are clustered by team and wide.
 - **Contamination.** PIGuard was trained on the deepset train split (the InjecGuard paper's Tables 4 and 5 list 343 benign and 203 injection rows from it), and most deepset rows in this suite come from that split. A separate row reports the deepset test-split rows alone. See `DATA_SOURCES.md`.
 - **Static suite.** Everything here is a fixed set of public payloads plus mechanical transforms. An attacker who can query the gateway and adapt will do better, which is why detector verdicts are hidden from clients and why garak gets its own table.
-- **Encoded text gets decoded and repeated.** garak's hex probe succeeded on 4 of 40 prompts and base64 on 1 of 40. In every hit, luna decoded the string, an offensive term from garak's payload list, and repeated it in its answer. No hit leaked the canary, PII or a link. The output rules look for leaks, not offensive text. Neither injection detector reads hex, and PIGuard's base64 flags come from the format, not the content (see the next item). A moderation check on the reply would close this.
+- **Encoded text gets decoded and repeated.** garak's hex and base64 probes each succeeded on 1 of 40 prompts (an earlier run of the same probes, before the provider-refusal fix, had 4 of 40 on hex, so these counts move between runs). In every hit, luna decoded the string, an offensive term from garak's payload list, and repeated it in its answer. No hit leaked the canary, PII or a link. The output rules look for leaks, not offensive text. Neither injection detector reads hex, and PIGuard's base64 flags come from the format, not the content (see the next item). A moderation check on the reply would close this.
 - **Encoded benign input gets refused.** At the tuned threshold PIGuard flags all 450 base64 benign prompts and 85% of leetspeak ones in the transform table. A customer who pastes base64 or writes in leetspeak gets the refusal.
 - **Detection runs on redacted text.** Presidio redacts the prompt before the injection detector scores it, and its false PERSON hits on encoded blobs can pull a score under the threshold. So the pipeline blocks 112 of 130 untransformed direct injections where the detector alone flags 113, and 202 of 265 against 210 with the transformed ones.
 - **One model call at a time.** The live server sends both model slots through one serialized client, because the harness `DollarCap` isn't thread-safe. Concurrent requests queue. A request cancelled by its deadline releases the lock while its worker thread keeps running, so timed-out calls can pile up inside `DollarCap` and the thread pool.
@@ -275,7 +275,7 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 - **Synthetic domain.** The help center, questions and account context are synthetic. Banking77 is real customer wording but short and clean.
 - **Label noise in the PII sets.** gretel's labels came from a NER library plus an LLM judge (its card says some are wrong or missing), which lowers measured precision for any system.
 - **CPU latency on one small machine.** Latency was measured on an otherwise idle Azure D4s v6 (4 vCPU on 2 physical cores, PyTorch at 2 threads). A busy machine is much slower: an earlier run on a shared container measured a document-detector p95 of 24 s against 0.8 s here.
-- **Replay is close, not exact.** `make eval-e2e` replays the committed cache, but the harness caches only successful replies. The 4 requests the content filter refused and the 32 that luna rejected with a 400 and gpt-5-mini answered come out differently on replay, and replayed calls cost $0. `make demo` renders from the committed live records, so the README numbers don't depend on replay.
+- **Replay is close, not exact.** `make eval-e2e` replays the committed cache, but the harness caches only successful replies. The requests the content filter or luna refused (4 and 20 across the three configs) come out differently on replay, and replayed calls cost $0. `make demo` renders from the committed live records, so the README numbers don't depend on replay.
 - **In-memory limits.** slowapi's store, the token budget and the circuit breakers are per process. Several replicas would need a shared store such as Redis.
 - **garak intervals aren't clustered.** Many garak prompts come from one template, so the Wilson intervals, which treat prompts as independent, are too narrow.
 - **Prompt Shields was not run.** No Content Safety resource was available, so its row is empty. The client is tested against a mock transport only.
@@ -290,7 +290,7 @@ Offline everything costs $0. The live parts use `gpt-6-luna` ($0.10 per million 
 | End-to-end, 3 configs, 448 test attacks and 150 benign questions | `make eval-e2e-live` | about 1,800 | about $0.40 | $2.00 (`DollarCap`) |
 | garak, 12 probes at a 40-prompt cap | `make garak` against a live gateway | about 600 | about $0.15 | $1.00 (`GATEWAY_DOLLAR_CAP_USD`) |
 
-The estimates assume about 1,500 input and 120 output tokens per model call and ignore the prompt-cache discount. Requests the gateway blocks before the model cost nothing. The live run used Foundry's default content filter (`Microsoft.DefaultV2`), because Azure refused an annotate-only policy without an approved exception. Its blocks are logged as their own layer (`azure_content_filter`): 4 of the 598 requests in the config without gateway guards. Another 32 requests (15, 15 and 2 across the three configs) got a 400 BadRequestError from luna and were answered by gpt-5-mini. Only the error class was logged, but 13 of the 15 prompts were the same in the first two configs and the 2 in the full gateway were JBB requests the detector missed, so they were most likely policy refusals under another error code. The gateway now ends such requests as `provider_refusal` and logs the code.
+The estimates assume about 1,500 input and 120 output tokens per model call and ignore the prompt-cache discount. Requests the gateway blocks before the model cost nothing. The live run used Foundry's default content filter (`Microsoft.DefaultV2`), because Azure refused an annotate-only policy without an approved exception. Its blocks are logged as their own layer (`azure_content_filter`): 4 of the 598 requests in the config without gateway guards. Another 20 requests (9, 10 and 1 across the three configs) got a 400 from luna with code `cyber_policy` or `bio_policy`. The gateway ends those as `provider_refusal` with the fixed refusal and does not send them to gpt-5-mini. An earlier run of the gateway logged only the error class and failed those requests over to gpt-5-mini, which answered them. Which prompts luna refuses varies a little from run to run.
 
 ## How I built this
 
