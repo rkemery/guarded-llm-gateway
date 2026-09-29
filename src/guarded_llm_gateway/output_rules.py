@@ -117,6 +117,11 @@ def host_allowed(url: str, allowed_domains: Iterable[str]) -> bool:
         return False
     if parts.scheme.lower() not in {"http", "https"} or not host:
         return False
+    # Browsers read a backslash in the authority as a slash, so in
+    # https://evil.test\@help.example/ the real host is evil.test, while urlsplit
+    # reports the text after "@". The allowlisted links never carry userinfo.
+    if "\\" in parts.netloc or parts.username is not None or parts.password is not None:
+        return False
     return any(host == d or host.endswith(f".{d}") for d in allowed_domains)
 
 

@@ -76,6 +76,9 @@ def test_canary_absent() -> None:
         ("https://tallowbrook.example", True),
         ("https://evil.example/x", False),
         ("https://help.tallowbrook.example@evil.com/", False),
+        ("https://evil.test\\@help.tallowbrook.example/x", False),
+        ("https://user@help.tallowbrook.example/", False),
+        ("https://help.tallowbrook.example\\evil.test/", False),
         ("https://help.tallowbrook.example.evil.com/", False),
         ("javascript:alert(1)", False),
         ("data:text/html,hi", False),
@@ -83,6 +86,12 @@ def test_canary_absent() -> None:
 )
 def test_host_allowlist(url: str, ok: bool) -> None:
     assert host_allowed(url, ALLOWED) is ok
+
+
+def test_backslash_userinfo_link_is_removed() -> None:
+    report = filter_links("[help](https://evil.test\\@help.tallowbrook.example/x)", ALLOWED)
+    assert "evil.test" not in report.text
+    assert report.removed == 1
 
 
 def test_markdown_image_exfil_is_removed() -> None:
