@@ -2,7 +2,7 @@
 
 A FastAPI gateway for a fictional neobank's support assistant that redacts PII, screens prompts and retrieved articles for injection, enforces output rules and fails over between models, with every guard measured on public datasets and a held-out test split.
 
-- **PIGuard** catches 86.9% (80.1 to 91.7) of 130 direct injections at a 1% dev FPR and flags 0.1% of 1876 Banking77 questions. ORing in ProtectAI's deberta lowered recall.
+- **PIGuard** catches 86.9% (80.1 to 91.7) of 130 direct injections at a 1% dev FPR and flags 0.1% of 1,876 Banking77 questions. ORing in ProtectAI's deberta lowered recall.
 - **Encoded attacks:** TPR is 100% on base64 and 96% on leetspeak, but PIGuard also flags all 450 base64 and 85% of leetspeak benign prompts. That's the format, not the attack.
 - **End to end:** 0.0% ASR (0.0 to 0.9) on 448 attacks with or without the gateway's guards, a floor effect.
 
@@ -17,8 +17,6 @@ uv run gateway serve  # fake model backend on 127.0.0.1:8000, then POST /v1/chat
 `make test` also runs offline. The first `gateway serve` downloads the pinned PIGuard model (about 740 MB) from Hugging Face.
 
 ## Results
-
-garak renders from a committed summary because the raw report holds offensive payloads.
 
 <!-- results:start -->
 **Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split (1396 benign prompts, 133 benign documents), every rate below on the held-out test split. Wilson 95% CIs, attack CIs clustered by payload group. Direct injections and JBB requests are untransformed here. The detector detail below has the encoded variants.
@@ -212,7 +210,7 @@ Mean time per document: regex 0.33 ms, Presidio 59.6 ms.
 - **End-to-end ASR, judged by code.** Three configs (no gateway guards with Foundry's default filter still on, deterministic guards only, the full gateway) are scored on whether the reply leaks the canary, account PII or an outside link, before and after the output rules.
 - **PII precision and recall per entity.** Regex alone can't find names or addresses, and per-entity numbers show where Presidio's small spaCy model misses them too.
 - **Fallback under injected faults.** Errors, hangs and malformed JSON are injected into fake models at fixed rates, and the table reports which stage of the chain answered.
-- **garak.** An automated scan of the running full gateway, not a human red team, so it doesn't compare layers.
+- **garak.** An automated scan of the running full gateway, not a human red team, so it doesn't compare layers. Its table renders from a committed summary because the raw report holds offensive payloads.
 
 <details>
 <summary>What's inside</summary>
@@ -230,7 +228,7 @@ Mean time per document: regex 0.33 ms, Presidio 59.6 ms.
 | `eval/` | Suite assembly, mechanical transforms, detector and PII benchmarks, offline pipeline pass, fault injection, live end-to-end run, README rendering |
 | `data/tallowbrook/` | Pinned snapshot of the synthetic help center and RAG questions, checked by `scripts/sync_data.py` |
 | `data/suites/` | The frozen attack suite (721 rows) and benign suite (3,973 rows) with provenance and license columns |
-| `results/` | Per-item records in the llm-eval-harness JSONL format, summaries, tuned thresholds |
+| `results/` | Per-item records in the [llm-eval-harness](https://github.com/rkemery/llm-eval-harness) JSONL format, summaries, tuned thresholds |
 | `garak/` | A separate uv project and config for the automated garak scan |
 
 </details>

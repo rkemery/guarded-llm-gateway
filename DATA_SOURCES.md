@@ -10,7 +10,7 @@ sources below is gated. File hashes are in `data/sources.lock.json` and
 
 | Dataset | Revision | License | Used for | URL |
 |---|---|---|---|---|
-| Tallowbrook Neobank Support (synthetic) | `3c72058` (git) | CC-BY-4.0 | Help-center corpus, RAG questions (benign traffic, indirect-attack carriers) | Vendored in `data/tallowbrook/`. Its canonical home will be a Hugging Face dataset. |
+| Tallowbrook Neobank Support (synthetic) | `3c72058` (git) | CC-BY-4.0 | Help-center corpus, RAG questions (benign traffic, indirect-attack carriers) | Vendored in `data/tallowbrook/`. Its canonical home is planned as a Hugging Face dataset. |
 | `deepset/prompt-injections` | `4f61ecb038e9c3fb77e21034b22511b523772cdd` | Apache-2.0 | Direct injections (rows labelled 1) | https://huggingface.co/datasets/deepset/prompt-injections |
 | `JailbreakBench/JBB-Behaviors` | `886acc352a31533ffbcf4ef22c744658688086fc` | MIT | Harmful-request goals (`harmful-behaviors.csv`) | https://huggingface.co/datasets/JailbreakBench/JBB-Behaviors |
 | `Lakera/gandalf_ignore_instructions` | `04737b65e90a6794ec227012e4a255a7def6344b` | MIT | Direct injections | https://huggingface.co/datasets/Lakera/gandalf_ignore_instructions |
