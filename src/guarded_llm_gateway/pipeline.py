@@ -126,6 +126,9 @@ class GatewayResult:
     tokens_out: int = 0
     reasoning_tokens: int = 0
     cost_usd: float = 0.0
+    # Token usage at list price, including replies served from the cache. Evals report
+    # this. cost_usd is what the process spent, so cached replies add nothing to it.
+    list_cost_usd: float = 0.0
     model_calls: int = 0
 
 
@@ -290,8 +293,11 @@ class Gateway:
                 result.tokens_out += response.output_tokens
                 result.reasoning_tokens += response.reasoning_tokens
                 price = DEFAULT_PRICES.get(request.model)
-                if price is not None and not response.from_cache:
-                    result.cost_usd += cost_usd(price, response)
+                if price is not None:
+                    call_cost = cost_usd(price, response)
+                    result.list_cost_usd += call_cost
+                    if not response.from_cache:
+                        result.cost_usd += call_cost
                 self.metrics.tokens.labels(slot.name, "input").inc(response.input_tokens)
                 self.metrics.tokens.labels(slot.name, "output").inc(response.output_tokens)
                 if response.finish_reason == "content_filter":

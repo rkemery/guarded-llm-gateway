@@ -3,7 +3,7 @@
 # pyproject.toml). Both 184M-parameter detectors are baked in: the default profile
 # runs PIGuard alone, and GATEWAY_DETECTORS can switch to deberta or both.
 FROM python:3.11-slim AS build
-# git is needed to fetch llm-eval-harness, which is pinned to a commit.
+# git is needed to fetch llm-eval-harness, which is pinned to the v0.1.0 tag.
 RUN apt-get update && apt-get install -y --no-install-recommends git \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=ghcr.io/astral-sh/uv:0.8.17 /uv /bin/uv

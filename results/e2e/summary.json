@@ -1,7 +1,7 @@
 {
   "full": {
     "errors": 0,
-    "cost_usd": 0.0,
+    "cost_usd": 0.0665806,
     "attack:all": {
       "attack_success": {
         "rate": 0.0,
@@ -394,7 +394,7 @@
   },
   "no_detectors": {
     "errors": 0,
-    "cost_usd": 4.834e-05,
+    "cost_usd": 0.11140365,
     "attack:all": {
       "attack_success": {
         "rate": 0.0,
@@ -789,7 +789,7 @@
   },
   "none": {
     "errors": 0,
-    "cost_usd": 0.0,
+    "cost_usd": 0.0760412,
     "attack:all": {
       "attack_success": {
         "rate": 0.0,

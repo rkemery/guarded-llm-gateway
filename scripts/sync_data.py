@@ -19,10 +19,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+DATASET_SOURCE = (
+    "rkemery/rag-support-assistant, tag tallowbrook-v0.1 (branch claude/tallowbrook-dataset)"
+)
+
 ROOT = Path(__file__).resolve().parent.parent
 DEST = ROOT / "data" / "tallowbrook"
 PINNED_COMMIT = "3c72058e8cc7d5dd6e224ecdec7b814341a3d48f"
-# source path in neobank-support-data -> vendored file name
+# source path in the dataset checkout -> vendored file name
 FILES = {
     "corpus/articles.jsonl": "articles.jsonl",
     "rag/questions_dev.jsonl": "questions_dev.jsonl",
@@ -78,7 +82,7 @@ def copy_from(source: Path, dest: Path = DEST) -> None:
     manifest = {
         "dataset": "Tallowbrook Neobank Support (synthetic)",
         "license": "CC-BY-4.0",
-        "source_repo": "neobank-support-data",
+        "source_repo": DATASET_SOURCE,
         "source_commit": PINNED_COMMIT,
         "files": entries,
     }
@@ -87,7 +91,12 @@ def copy_from(source: Path, dest: Path = DEST) -> None:
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--from", dest="source", type=Path, help="neobank-support-data checkout")
+    parser.add_argument(
+        "--from",
+        dest="source",
+        type=Path,
+        help="checkout of the Tallowbrook dataset",
+    )
     args = parser.parse_args(argv)
     try:
         if args.source is not None:

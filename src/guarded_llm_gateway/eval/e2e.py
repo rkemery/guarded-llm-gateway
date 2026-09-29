@@ -237,7 +237,7 @@ def _record(
         tokens_in=result.tokens_in,
         tokens_out=result.tokens_out,
         reasoning_tokens=result.reasoning_tokens,
-        cost_usd=result.cost_usd,
+        cost_usd=result.list_cost_usd,
         latency_ms=sum(e.latency_ms for e in result.layers),
         meta=meta,
     )
