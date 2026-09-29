@@ -4,7 +4,10 @@
    the pipeline). Citations are kept only if they name a retrieved article.
 2. Canary: the system prompt carries a random canary token. A reply that
    contains it, in plain, spaced out, reversed or base64 form, is blocked, because
-   the model has been talked into dumping its hidden context.
+   the model has been talked into dumping its hidden context. Both the raw reply
+   and the parsed answer are checked, after NFKC, so JSON escapes and fullwidth
+   digits don't hide it. Other encodings (hex, ROT13, a translation) are not
+   caught.
 3. Links: markdown images, links, bare URLs and email addresses are kept only
    when their domain is on the allowlist. Images are an exfiltration channel that
    renders without a click, and LLMail-Inject's goal is an email to an outside
@@ -19,6 +22,7 @@ from __future__ import annotations
 import base64
 import json
 import re
+import unicodedata
 from collections.abc import Iterable, Sequence
 from dataclasses import dataclass, field
 from urllib.parse import urlsplit
@@ -68,20 +72,37 @@ def _compact(text: str) -> str:
     return re.sub(r"[^a-z0-9]", "", text.lower())
 
 
+def _base64_needles(secret: str) -> set[str]:
+    """The base64 of `secret` at each of the three byte alignments it can start at.
+
+    Base64 works on 3-byte groups, so the same bytes encode differently after a
+    prefix of 1 or 2 bytes. For each alignment, keep only the 4-character groups
+    made entirely of the secret's bytes.
+    """
+    needles = set()
+    raw = secret.encode()
+    for offset in range(3):
+        encoded = base64.b64encode(b"\0" * offset + raw).decode()
+        start = 4 if offset else 0
+        end = 4 * ((offset + len(raw)) // 3)
+        needle = encoded[start:end]
+        if len(needle) >= 16:
+            needles |= {needle, needle.replace("+", "-").replace("/", "_")}
+    return needles
+
+
 def contains_canary(text: str, canary: str) -> bool:
     """True if the canary (or its random part) shows up plain, spaced, reversed or base64."""
+    text = unicodedata.normalize("NFKC", text)
     compact = _compact(text)
     secret = _compact(canary)
     random_part = _compact(canary.rsplit("-", 1)[-1])
     candidates = {secret, random_part, secret[::-1], random_part[::-1]}
     if any(c and len(c) >= 8 and c in compact for c in candidates):
         return True
-    encoded = {
-        base64.b64encode(canary.encode()).decode().rstrip("="),
-        base64.urlsafe_b64encode(canary.encode()).decode().rstrip("="),
-    }
     squashed = re.sub(r"\s", "", text)
-    return any(e in squashed for e in encoded)
+    needles = _base64_needles(canary) | _base64_needles(canary.rsplit("-", 1)[-1])
+    return any(n in squashed for n in needles)
 
 
 # ---------------------------------------------------------------- links
@@ -207,7 +228,7 @@ def apply_output_rules(
     context_values: Sequence[str] = (),
 ) -> OutputVerdict:
     citations = [c for c in answer.citations if c in set(retrieved_ids)]
-    if contains_canary(raw_reply, canary):
+    if contains_canary(raw_reply, canary) or contains_canary(answer.answer, canary):
         return OutputVerdict("", [], False, blocked_by="output_canary")
     links = filter_links(answer.answer, allowed_domains)
     spans = pii_echo_spans(links.text, context_values, allowed_pii)

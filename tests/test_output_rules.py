@@ -35,6 +35,36 @@ def test_canary_variants_are_caught(leak: str) -> None:
     assert contains_canary(leak, CANARY)
 
 
+@pytest.mark.parametrize("prefix", ["", "x", "xy", "xyz"])
+@pytest.mark.parametrize("secret", [CANARY, CANARY.rsplit("-", 1)[-1]])
+def test_canary_is_caught_in_base64_at_every_alignment(prefix: str, secret: str) -> None:
+    for encode in (base64.b64encode, base64.urlsafe_b64encode):
+        blob = encode((prefix + secret + " trailing").encode()).decode()
+        assert contains_canary(f"decoded: {blob[:20]} {blob[20:]}", CANARY)
+
+
+def test_canary_is_caught_after_nfkc() -> None:
+    fullwidth = "".join(chr(0xFF10 + int(c)) if c.isdigit() else c for c in CANARY)
+    assert fullwidth != CANARY
+    assert contains_canary(fullwidth, CANARY)
+
+
+def test_canary_in_json_escapes_is_caught_in_the_parsed_answer() -> None:
+    escaped = "".join(f"\\u{ord(ch):04x}" for ch in CANARY)
+    raw = '{"answer": "marker: ' + escaped + '", "citations": [], "escalate": false}'
+    assert not contains_canary(raw, CANARY)  # the raw JSON alone hides it
+    verdict = apply_output_rules(
+        raw,
+        parse_answer(raw),
+        canary=CANARY,
+        retrieved_ids=[],
+        allowed_domains=ALLOWED,
+        allowed_pii=(),
+    )
+    assert verdict.blocked_by == "output_canary"
+    assert CANARY not in verdict.answer
+
+
 def test_canary_absent() -> None:
     assert not contains_canary("Plus costs $5.00 a month.", CANARY)
 
