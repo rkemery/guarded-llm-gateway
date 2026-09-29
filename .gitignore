@@ -22,5 +22,6 @@ htmlcov/
 
 # Run artifacts
 logs/
-cache/
+cache/*
+!cache/e2e/
 garak/runs/
