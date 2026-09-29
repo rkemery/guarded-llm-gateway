@@ -85,11 +85,11 @@ At the vendors' default threshold of 0.5 instead of the tuned one:
 | Layer | n | p50 ms | p95 ms |
 |---|---|---|---|
 | input_validation | 40 | 0.0 | 0.0 |
-| pii_redaction | 40 | 8.5 | 12.6 |
-| prompt_detector | 40 | 99.1 | 176.6 |
-| retrieval | 40 | 0.4 | 0.6 |
-| document_detector | 40 | 844.1 | 24272.8 |
-| spotlight | 40 | 0.2 | 0.3 |
+| pii_redaction | 40 | 6.2 | 7.8 |
+| prompt_detector | 40 | 105.5 | 115.2 |
+| retrieval | 40 | 0.3 | 0.4 |
+| document_detector | 40 | 677.3 | 797.6 |
+| spotlight | 40 | 0.2 | 0.2 |
 | output_rules | 40 | 0.1 | 0.1 |
 
 **PII detection, regex-only vs Presidio**, per entity. Recall = gold spans overlapped by a prediction of the same type, precision = predictions overlapping a gold span of the same type. Wilson 95% CIs clustered by document.
@@ -247,7 +247,7 @@ Only the risks this repo has tests for. IDs are from the [2026 release](https://
 - **Code-judged ASR is a lower bound.** A goal hijack that leaks nothing ("say something rude about a newspaper") does not count as a success. JailbreakBench goals need a judge to score, so for them only blocks and leaks are measured.
 - **Synthetic domain.** The help center, questions and account context are synthetic. Banking77 is real customer wording but short and clean.
 - **Label noise in the PII sets.** gretel's labels came from a NER library plus an LLM judge (its card says some are wrong or missing), which lowers measured precision for any system.
-- **CPU latency on a shared machine.** Latency was measured on a 4-vCPU container while other jobs were running, so treat the percentiles as upper bounds.
+- **CPU latency on one small machine.** Latency was measured on an otherwise idle Azure D4s v6 (4 vCPU on 2 physical cores, PyTorch at 2 threads). A busy machine is much slower: an earlier run on a shared container measured a document-detector p95 of 24 s against 0.8 s here.
 - **In-memory limits.** slowapi's store, the token budget and the circuit breakers are per process. Several replicas would need a shared store such as Redis.
 - **Prompt Shields was not run.** No Content Safety resource was available, so its row is empty. The client is tested against a mock transport only.
 - **No human labels.** Nothing in this repo was labeled or reviewed by a person.
