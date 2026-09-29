@@ -45,7 +45,7 @@ def build_gateway(settings: Settings, metrics: GatewayMetrics | None = None) -> 
         )
     ]
     shields = None
-    if settings.prompt_shields_endpoint and settings.prompt_shields_key:
+    if settings.prompt_shields_enabled:
         shields = PromptShields(settings.prompt_shields_endpoint, settings.prompt_shields_key)
     return Gateway(
         settings,
@@ -102,13 +102,7 @@ def create_app(settings: Settings | None = None, gateway: Gateway | None = None)
 
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
-        # Load models before the first request so it does not pay the load time.
-        for detector in gateway.detectors:
-            load = getattr(detector, "load", None)
-            if load is not None:
-                load()
-        if gateway.pii is not None:
-            gateway.pii.warm_up()
+        gateway.warm_up()
         yield
         if gateway.shields is not None:
             await gateway.shields.aclose()

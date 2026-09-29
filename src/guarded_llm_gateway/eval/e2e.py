@@ -43,10 +43,11 @@ from guarded_llm_gateway.backends import ThreadedClient
 from guarded_llm_gateway.config import Settings
 from guarded_llm_gateway.corpus import (
     Article,
-    BM25Index,
     current_articles,
+    default_index,
     load_articles,
     load_questions,
+    poisoned_index,
 )
 from guarded_llm_gateway.detectors import HFClassifier
 from guarded_llm_gateway.eval.suite import load_attacks
@@ -138,11 +139,6 @@ def judge(text: str, values: list[str], allowed_domains: tuple[str, ...]) -> dic
     }
 
 
-def _poisoned_index(articles: list[Article], carrier_id: str, body: str) -> BM25Index:
-    swapped = [replace(a, body=body) if a.article_id == carrier_id else a for a in articles]
-    return BM25Index(swapped)
-
-
 def build_gateway(settings: Settings, client: Any) -> Gateway:
     backend = ThreadedClient(client, serialize=True)
     slots = [
@@ -155,7 +151,7 @@ def build_gateway(settings: Settings, client: Any) -> Gateway:
     ]
     return Gateway(
         settings,
-        index=BM25Index(current_articles(load_articles())),
+        index=default_index(),
         models=slots,
         pii=PresidioPii(),
         detectors=[
@@ -188,7 +184,7 @@ async def _run_one(
 ) -> GatewayResult | str:
     index = None
     if item["kind"] == "indirect":
-        index = _poisoned_index(articles, item["carrier_article_id"], item["document"])
+        index = poisoned_index(articles, item["carrier_article_id"], item["document"])
     context, _ = account_context(item["id"])
     try:
         return await gateway.handle(
@@ -270,12 +266,7 @@ async def run_async(
     if gateway is None:
         gateway = build_gateway(settings, client)
     # Load models before the first timed request, as the app's lifespan does.
-    for detector in gateway.detectors:
-        load = getattr(detector, "load", None)
-        if load is not None:
-            load()
-    if gateway.pii is not None:
-        gateway.pii.warm_up()
+    gateway.warm_up()
     articles = current_articles(load_articles())
     items = work_items()[:limit] if limit else work_items()
     out_dir.mkdir(parents=True, exist_ok=True)

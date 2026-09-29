@@ -201,6 +201,15 @@ class Gateway:
         self._clock = clock
         self._doc_cache: OrderedDict[tuple[str, str], float] = OrderedDict()
 
+    def warm_up(self) -> None:
+        """Load the detector models and spaCy now, so the first request doesn't pay for it."""
+        for detector in self.detectors:
+            load = getattr(detector, "load", None)
+            if load is not None:
+                load()
+        if self.pii is not None:
+            self.pii.warm_up()
+
     # ------------------------------------------------------------ helpers
 
     def _threshold(self, kind: str, name: str) -> float:
