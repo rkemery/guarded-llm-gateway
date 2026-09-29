@@ -176,9 +176,8 @@ def filter_links(text: str, allowed_domains: Sequence[str]) -> LinkReport:
         removed += 1
         return EMAIL_REMOVED
 
-    before_html = text
-    text = _ACTIVE_HTML.sub("", text)
-    removed += len(_ACTIVE_HTML.findall(before_html))
+    text, html_removed = _ACTIVE_HTML.subn("", text)
+    removed += html_removed
     text = _MD_IMAGE.sub(image, text)
     text = _MD_LINK.sub(link, text)
     text = _MD_REF.sub(ref, text)
