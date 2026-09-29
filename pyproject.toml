@@ -44,7 +44,7 @@ eval = [
 default-groups = ["dev", "eval"]
 
 [tool.uv.sources]
-llm-eval-harness = { git = "https://github.com/rkemery/llm-eval-harness", rev = "5de8e0ee94412b4e683316ef374658f348b74b75" }
+llm-eval-harness = { git = "https://github.com/rkemery/llm-eval-harness", tag = "v0.1.0" }
 torch = [{ index = "pytorch-cpu" }]
 en-core-web-sm = { url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.8.0/en_core_web_sm-3.8.0-py3-none-any.whl" }
 
