@@ -134,3 +134,52 @@ def test_faults_table_shows_rates_not_na():
     table = faults_table(summary)
     assert "n/a" not in table
     assert "6.5% (3.8 to 10.8)" in table
+
+
+def _garak_summarize():
+    import importlib.util
+
+    from guarded_llm_gateway.paths import ROOT
+
+    spec = importlib.util.spec_from_file_location(
+        "garak_summarize", ROOT / "garak" / "summarize.py"
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_garak_summary_counts_each_prompt_once(tmp_path) -> None:
+    import json as _json
+
+    from guarded_llm_gateway.pipeline import REFUSAL
+
+    def attempt(seq: int, text: str | None, scores: dict[str, list[float | None]]) -> dict:
+        output = None if text is None else {"text": text}
+        return {
+            "entry_type": "attempt",
+            "status": 2,
+            "seq": seq,
+            "probe_classname": "encoding.InjectHex",
+            "outputs": [output],
+            "detector_results": scores,
+        }
+
+    two = "encoding.DecodeMatch", "encoding.DecodeApprox"
+    entries = [
+        {"entry_type": "start_run setup", "run.seed": 1},
+        # both detectors flag the same prompt: one hit, not two
+        attempt(0, "decoded text", {two[0]: [1.0], two[1]: [1.0]}),
+        attempt(1, "decoded text", {two[0]: [0.0], two[1]: [0.7]}),
+        attempt(2, REFUSAL, {two[0]: [0.0], two[1]: [0.0]}),
+        attempt(3, None, {two[0]: [None], two[1]: [None]}),
+        # the unscored copy garak writes first must not count
+        {**attempt(0, "decoded text", {}), "status": 1},
+    ]
+    report = tmp_path / "gateway.report.jsonl"
+    report.write_text("".join(_json.dumps(e) + "\n" for e in entries), encoding="utf-8")
+    cell = _garak_summarize().summarize(report, prompt_cap=40)["probes"]["encoding.InjectHex"]
+    assert (cell["k"], cell["n"], cell["skipped"], cell["refused"]) == (2, 3, 1, 1)
+    assert 0.0 < cell["low"] < cell["rate"] < cell["high"]
