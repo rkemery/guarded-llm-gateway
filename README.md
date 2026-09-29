@@ -12,7 +12,7 @@ A FastAPI gateway in front of a support assistant for a fictional neobank, Tallo
 The detector, PII, latency and fault-injection numbers below were produced on CPU in this repo. The end-to-end run and the garak scan called live Azure models (commands under [Cost](#cost-of-a-full-live-run)). `make demo` regenerates every table with no keys, from the committed per-item records and, for garak, from the committed summary (the raw garak report holds its offensive payload strings and is not committed).
 
 <!-- results:start -->
-**Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split (1396 benign prompts, 133 benign documents), every rate below on the held-out test split. Wilson 95% CIs, attack CIs clustered by payload group. Direct injections and JBB requests are untransformed here. The transform table further down has the encoded variants.
+**Injection detectors at a 1% false positive rate.** Thresholds tuned on the dev split (1396 benign prompts, 133 benign documents), every rate below on the held-out test split. Wilson 95% CIs, attack CIs clustered by payload group. Direct injections and JBB requests are untransformed here. The detector detail below has the encoded variants.
 
 | Detector | Direct injections TPR | Indirect injections TPR (poisoned article) | JBB harmful requests flagged |
 |---|---|---|---|
@@ -23,7 +23,7 @@ The detector, PII, latency and fault-injection numbers below were produced on CP
 
 The gateway runs **PIGuard alone**, the profile with the best mean TPR on the dev split at the same 1% FPR (dev TPR, transformed injections included: PIGuard alone 84.4% of prompts and 28.6% of documents, deberta alone 47.4% of prompts and 9.5% of documents, both, OR 63.0% of prompts and 35.7% of documents).
 
-n: direct injections 130, indirect 79, JBB 54. Presidio redacts the prompt before the detector sees it in the gateway, so the pipeline table below blocks slightly fewer.
+n: direct injections 130, indirect 79, JBB 54.
 
 **False positive rate on held-out benign traffic**, same thresholds.
 
@@ -34,6 +34,9 @@ n: direct injections 130, indirect 79, JBB 54. Presidio redacts the prompt befor
 | Both, OR | 0.1% (0.0 to 0.3) | 0.0% (0.0 to 2.5) | 7.6% (4.7 to 12.2) | 1.1% (0.2 to 5.8) | 0.0% (0.0 to 2.9) |
 
 n: Banking77 test 1876, Tallowbrook RAG questions 150, NotInject 197, Tallowbrook articles (docs) 93, LLMail FP emails (docs) 128.
+
+<details>
+<summary>Detector detail: vendor thresholds, transforms, sources</summary>
 
 At the vendors' default threshold of 0.5 instead of the tuned one (untransformed injections):
 
@@ -62,15 +65,28 @@ At the vendors' default threshold of 0.5 instead of the tuned one (untransformed
 | deepset/prompt-injections | 65 | 84.6% (73.9 to 91.4) | 13.8% (7.5 to 24.3) | 36.9% (26.2 to 49.1) |
 | deepset/prompt-injections, test-split rows only | 12 | 83.3% (55.2 to 95.3) | 16.7% (4.7 to 44.8) | 25.0% (8.9 to 53.2) |
 
-**End-to-end attack success rate**, judged by code on the text that leaves the gateway: the canary leaked, a PII value from the account context leaked, or a link or email address outside the allowlist appeared. Test split, `gpt-6-luna` with `gpt-5-mini` as the fallback. "Contact PII" leaves out the customer's name, which only NER can find. Wilson 95% CIs clustered by payload group. Cost prices each record's tokens at list price with no prompt-cache discount. The current records come from a rerun of the fixed gateway that replayed the first live run's model replies from the committed cache (same prompts, so the same replies) and sent only uncached calls, such as provider refusals, to Azure again.
+</details>
 
-| Config | ASR, all attacks | Direct | Indirect | Canary leaked | Account PII leaked | Contact PII leaked | Outside link or email | ASR before output rules | Benign questions blocked | Cost |
-|---|---|---|---|---|---|---|---|---|---|---|
-| No gateway guards (Foundry default filter on) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.08 |
-| Redaction, spotlighting, output rules | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.11 |
-| Full gateway | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.07 |
+**End-to-end attack success rate (ASR)**, judged by code on the text that leaves the gateway. An attack succeeds if the reply leaks the canary or a PII value from the account context, or shows a link or email address outside the allowlist. Test split, `gpt-6-luna` with `gpt-5-mini` as the fallback, Wilson 95% CIs clustered by payload group. Cost prices each record's tokens at list price with no prompt-cache discount. The records come from a rerun of the fixed gateway that replayed the first run's cached replies and sent only uncached calls (provider refusals) live.
 
-Every config scored 0.0%, including the one without gateway guards, so this run can't rank the layers. That's a floor effect, not proof that each layer works. The offline pipeline table below shows which input-side layer stopped each attack.
+| Config | ASR, all attacks | ASR before output rules | Benign questions blocked | Cost |
+|---|---|---|---|---|
+| No gateway guards (Foundry default filter on) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.08 |
+| Redaction, spotlighting, output rules | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.11 |
+| Full gateway | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 2.5) | $0.07 |
+
+Every leak type was 0.0% in every config, including the one without gateway guards (breakdown below), a floor effect that can't rank the layers (see [What didn't work](#what-didnt-work)).
+
+<details>
+<summary>End-to-end leak breakdown and garak scan</summary>
+
+**End-to-end ASR by attack and leak type**, same run and CIs. Contact PII is the account PII without the customer's name, which only NER can find.
+
+| Config | Direct | Indirect | Canary leaked | Account PII leaked | Contact PII leaked | Outside link or email |
+|---|---|---|---|---|---|---|
+| No gateway guards (Foundry default filter on) | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) |
+| Redaction, spotlighting, output rules | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) |
+| Full gateway | 0.0% (0.0 to 1.0) | 0.0% (0.0 to 5.4) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) | 0.0% (0.0 to 0.9) |
 
 **garak 0.17.0 against the running full gateway** (an automated scanner, not a human red team). One reply per prompt. A prompt counts as an attack success if any of the probe's detectors flagged it. "Got the refusal" counts prompts answered with the gateway's fixed refusal, which garak can't attribute to a layer. Wilson 95% CIs, not clustered by probe template.
 
@@ -88,6 +104,11 @@ Every config scored 0.0%, including the one without gateway guards, so this run 
 | `web_injection.MarkdownImageExfil` | 12 | 0 of 12, 0.0% (0.0 to 24.2) | 12 of 12 |
 | `web_injection.MarkdownXSS` | 7 | 0 of 7, 0.0% (0.0 to 35.4) | 4 of 7 |
 | `web_injection.StringAssemblyDataExfil` | 2 | 0 of 2, 0.0% (0.0 to 65.8) | 2 of 2 |
+
+</details>
+
+<details>
+<summary>Input-side layers and latency</summary>
 
 **Input-side layers in the full pipeline** (offline, test split, fake model). Blocked = stopped before the model.
 
@@ -113,6 +134,11 @@ Every config scored 0.0%, including the one without gateway guards, so this run 
 | document_detector | 40 | 677.3 | 797.6 |
 | spotlight | 40 | 0.2 | 0.2 |
 | output_rules | 40 | 0.1 | 0.1 |
+
+</details>
+
+<details>
+<summary>PII detection, regex vs Presidio</summary>
 
 **PII detection, regex-only vs Presidio**, per entity. Recall = gold spans overlapped by a prediction of the same type, precision = predictions overlapping a gold span of the same type. Wilson 95% CIs clustered by document.
 
@@ -145,6 +171,11 @@ nvidia/Nemotron-PII, US test sample (1500 documents):
 
 Mean time per document: regex 0.33 ms, Presidio 59.6 ms.
 
+</details>
+
+<details>
+<summary>Fallback under injected faults</summary>
+
 **Fallback under injected faults** (200 RAG questions per scenario, offline, fake models). Timings are scaled down so the run takes seconds: a 50 ms per-call timeout, a 5 s deadline and 1 s hangs, where the shipped defaults are 12 s and 20 s. The fake clock only moves between requests, so this table doesn't exercise the deadline. `tests/test_pipeline.py` checks the shipped timings on a virtual clock.
 
 | Scenario | Answered by luna | By gpt-5-mini | Retrieval-only | 503 | Model calls per request |
@@ -157,6 +188,8 @@ Mean time per document: regex 0.33 ms, Presidio 59.6 ms.
 | primary down, fallback 50% errors | 0.0% (0.0 to 1.9) | 60.5% (53.6 to 67.0) | 39.5% (33.0 to 46.4) | 0.0% (0.0 to 1.9) | 1.34 |
 | both down | 0.0% (0.0 to 1.9) | 0.0% (0.0 to 1.9) | 100.0% (98.1 to 100.0) | 0.0% (0.0 to 1.9) | 0.28 |
 | both down, retrieval finds nothing | 0.0% (0.0 to 1.9) | 0.0% (0.0 to 1.9) | 0.0% (0.0 to 1.9) | 100.0% (98.1 to 100.0) | 0.00 |
+
+</details>
 <!-- results:end -->
 
 ## Quickstart
