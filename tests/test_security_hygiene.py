@@ -58,9 +58,8 @@ def test_canary_is_random_per_process_unless_set() -> None:
 
 def test_owasp_table_lists_only_rows_with_existing_tests() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    section = readme.split("### OWASP Top 10 for LLM Applications (2026)", 1)[1].split("\n## ", 1)[
-        0
-    ]
+    heading = "<summary>OWASP Top 10 for LLM Applications (2026)</summary>"
+    section = readme.split(heading, 1)[1].split("</details>", 1)[0]
     rows = [line for line in section.splitlines() if line.startswith("| LLM")]
     assert rows
     for line in rows:

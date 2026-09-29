@@ -30,7 +30,12 @@ from llm_eval_harness import EvalRecord, read_records, write_records
 
 from guarded_llm_gateway.backends import FakeModel
 from guarded_llm_gateway.config import Settings
-from guarded_llm_gateway.corpus import BM25Index, current_articles, load_articles
+from guarded_llm_gateway.corpus import (
+    current_articles,
+    default_index,
+    load_articles,
+    poisoned_index,
+)
 from guarded_llm_gateway.detectors import HFClassifier
 from guarded_llm_gateway.eval.detector_report import rate
 from guarded_llm_gateway.eval.suite import load_attacks, load_benign
@@ -67,15 +72,13 @@ def work_items() -> list[dict[str, Any]]:
 def _gateway(settings: Settings, torch_threads: int, doc_cache_size: int) -> Gateway:
     gateway = Gateway(
         settings,
-        index=BM25Index(current_articles(load_articles())),
+        index=default_index(),
         models=[ModelSlot("fake", FakeModel(), CircuitBreaker("fake"))],
         pii=PresidioPii(),
         detectors=[HFClassifier(n, torch_threads=torch_threads) for n in settings.detectors],
         doc_cache_size=doc_cache_size,
     )
-    for d in gateway.detectors:
-        d.load()  # type: ignore[attr-defined]
-    gateway.pii.warm_up()  # type: ignore[union-attr]
+    gateway.warm_up()
     return gateway
 
 
@@ -89,13 +92,7 @@ async def run_async(torch_threads: int = 4) -> dict[str, Any]:
     for item in work_items():
         index = None
         if item.get("kind") == "indirect":
-            swapped = [
-                replace(a, body=item["document"])
-                if a.article_id == item["carrier_article_id"]
-                else a
-                for a in articles
-            ]
-            index = BM25Index(swapped)
+            index = poisoned_index(articles, item["carrier_article_id"], item["document"])
         result = await gateway.handle(item["text"], index=index)
         records.append(_record(item, result, "suite"))
     # Latency pass: same models, document cache off so every article is scored cold.

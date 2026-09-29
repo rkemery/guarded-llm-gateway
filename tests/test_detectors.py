@@ -110,7 +110,7 @@ def test_windows_cover_long_texts_with_overlap() -> None:
 
 @pytest.mark.download
 def test_local_piguard_matches_remote_code_at_pinned_revision() -> None:
-    """Runs PIGuard's own modeling code once, at the pinned revision, to check our copy."""
+    """Runs PIGuard's own modeling code once, at the pinned revision, to check the copy here."""
     import torch
     from transformers import AutoModelForSequenceClassification
 

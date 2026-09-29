@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
-import json
 import re
 import time
 import unicodedata
@@ -201,6 +200,15 @@ class Gateway:
         self.budget = budget
         self._clock = clock
         self._doc_cache: OrderedDict[tuple[str, str], float] = OrderedDict()
+
+    def warm_up(self) -> None:
+        """Load the detector models and spaCy now, so the first request doesn't pay for it."""
+        for detector in self.detectors:
+            load = getattr(detector, "load", None)
+            if load is not None:
+                load()
+        if self.pii is not None:
+            self.pii.warm_up()
 
     # ------------------------------------------------------------ helpers
 
@@ -598,9 +606,3 @@ class Gateway:
         )
         result.citations = [a.article_id for a in hits]
         self.metrics.fallbacks.labels("retrieval_only").inc()
-
-
-def result_to_json(result: GatewayResult) -> str:
-    return json.dumps(
-        result.__dict__, default=lambda o: o.model_dump() if hasattr(o, "model_dump") else str(o)
-    )

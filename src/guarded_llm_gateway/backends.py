@@ -65,9 +65,7 @@ class ThreadedClient:
 def _openai_retryable() -> tuple[type[BaseException], ...]:
     try:
         from llm_eval_harness.azure import retryable_errors
-    except ImportError:
-        return ()
-    try:
+
         return retryable_errors()
     except ImportError:
         return ()

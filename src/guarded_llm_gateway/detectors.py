@@ -2,7 +2,7 @@
 
 Both local models are DeBERTa-v3-base classifiers (184M parameters each) pinned
 to a Hugging Face commit. PIGuard ships custom modeling code and its card says
-to load it with `trust_remote_code=True`. We read that code at the pinned
+to load it with `trust_remote_code=True`. I read that code at the pinned
 revision: it is a DeBERTa-v2 sequence classifier whose head is one linear layer
 on the [CLS] hidden state, with no pooler. `PIGuardClassifier` below
 reimplements it in a few lines, so no downloaded code ever runs. A test
@@ -308,7 +308,3 @@ class PromptShields:
 
     async def aclose(self) -> None:
         await self._client.aclose()
-
-
-def build_detectors(names: Sequence[str], torch_threads: int | None = None) -> list[HFClassifier]:
-    return [HFClassifier(name, torch_threads=torch_threads) for name in names]

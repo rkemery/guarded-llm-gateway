@@ -4,7 +4,7 @@
 per-item records, reruns the offline fault-injection simulation, and rewrites
 the text between the `results` markers in README.md. Rows that need a live
 model (end-to-end ASR, garak) read "pending live run" until their results
-files exist.
+files exist. The key tables stay visible and the rest go in `<details>` blocks.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ from typing import Any
 
 from llm_eval_harness.report import write_section
 
+from guarded_llm_gateway.eval.pii_bench import CATEGORIES as PII_CATEGORIES
 from guarded_llm_gateway.paths import RESULTS_DIR, ROOT
 
 PENDING = "pending live run"
@@ -23,6 +24,7 @@ DETECTOR_ROWS = (
     ("deberta", "ProtectAI deberta-v3-base-prompt-injection-v2"),
     ("combined", "Both, OR"),
 )
+PROFILE_NAMES = {"piguard": "PIGuard alone", "deberta": "deberta alone", "combined": "both, OR"}
 BENIGN_SETS = (
     ("benign:banking77", "Banking77 test"),
     ("benign:tallowbrook_rag", "Tallowbrook RAG questions"),
@@ -31,7 +33,12 @@ BENIGN_SETS = (
     ("benign:llmail_fp_emails", "LLMail FP emails (docs)"),
 )
 TRANSFORM_ROWS = ("none", "base64", "leetspeak", "homoglyph", "zero_width", "code_fence")
-PII_CATEGORIES = ("CREDIT_CARD", "IBAN", "EMAIL", "PHONE", "SSN", "PERSON", "ADDRESS")
+E2E_CONFIGS = {
+    "none": "No gateway guards (Foundry default filter on)",
+    "no_detectors": "Redaction, spotlighting, output rules",
+    "full": "Full gateway",
+}
+LEAK_METRICS = ("canary_leak", "pii_leak", "pii_leak_contact", "link_leak")
 
 
 def row(*cells: str) -> str:
@@ -40,6 +47,11 @@ def row(*cells: str) -> str:
 
 def sep(n: int) -> str:
     return "|" + "---|" * n
+
+
+def details(summary: str, body: str) -> str:
+    """A collapsed block. GitHub renders tables inside it only after a blank line."""
+    return f"<details>\n<summary>{summary}</summary>\n\n{body}\n\n</details>"
 
 
 def _load(path: Path) -> dict[str, Any] | None:
@@ -57,6 +69,10 @@ def _n(cell: dict[str, Any] | None) -> str:
     return str(cell.get("n", 0)) if cell else "0"
 
 
+def _metric(data: dict[str, Any], group: str, metric: str) -> str:
+    return pct(data.get(group, {}).get(metric))
+
+
 def detector_tables(summary: dict[str, Any]) -> str:
     test = summary["test"]
     tuned = summary["tuned"]
@@ -66,7 +82,7 @@ def detector_tables(summary: dict[str, Any]) -> str:
         f"({tuned['prompt']['n_dev_benign']} benign prompts, {tuned['document']['n_dev_benign']} "
         "benign documents), every rate below on the held-out test split. Wilson 95% CIs, "
         "attack CIs clustered by payload group. Direct injections and JBB requests are "
-        "untransformed here. The transform table further down has the encoded variants.",
+        "untransformed here. The detector detail below has the encoded variants.",
         "",
         "| Detector | Direct injections TPR | Indirect injections TPR (poisoned article) "
         "| JBB harmful requests flagged |",
@@ -86,25 +102,16 @@ def detector_tables(summary: dict[str, Any]) -> str:
         "| Azure Prompt Shields | not run (needs a Content Safety resource) | not run | not run |"
     )
     lines.append("")
-    dev = summary.get("dev_tpr", {})
     chosen = summary.get("profile")
-    if chosen and dev:
-        names = {"piguard": "PIGuard alone", "deberta": "deberta alone", "combined": "both, OR"}
-        parts = ", ".join(
-            f"{names[p]} {v['prompt'] * 100:.1f}% of prompts and {v['document'] * 100:.1f}% of "
-            "documents"
-            for p, v in dev.items()
-        )
+    if chosen and summary.get("dev_tpr"):
         lines += [
-            f"The gateway runs **{names[chosen]}**, the profile with the best mean TPR on the dev "
-            f"split at the same 1% FPR (dev TPR, transformed injections included: {parts}).",
+            f"The gateway runs **{PROFILE_NAMES[chosen]}**, the profile with the best mean TPR "
+            "on the dev split at the same 1% FPR.",
             "",
         ]
     lines.append(
         f"n: direct injections {_n(first.get('attack:direct_injection'))}, indirect "
-        f"{_n(first.get('attack:indirect'))}, JBB {_n(first.get('attack:jbb_harmful'))}. "
-        "Presidio redacts the prompt before the detector sees it in the gateway, so the "
-        "pipeline table below blocks slightly fewer."
+        f"{_n(first.get('attack:indirect'))}, JBB {_n(first.get('attack:jbb_harmful'))}."
     )
     lines += ["", "**False positive rate on held-out benign traffic**, same thresholds.", ""]
     header = "| Detector | " + " | ".join(label for _, label in BENIGN_SETS) + " |"
@@ -114,8 +121,24 @@ def detector_tables(summary: dict[str, Any]) -> str:
         lines.append(f"| {label} | {cells} |")
     lines.append("")
     lines.append("n: " + ", ".join(f"{label} {_n(first.get(s))}" for s, label in BENIGN_SETS) + ".")
+    return "\n".join(lines)
+
+
+def detector_detail(summary: dict[str, Any]) -> str:
+    test = summary["test"]
+    first = test["combined"]
+    lines = []
+    if dev := summary.get("dev_tpr"):
+        parts = ", ".join(
+            f"{PROFILE_NAMES[p]} {v['prompt'] * 100:.1f}% of prompts and "
+            f"{v['document'] * 100:.1f}% of documents"
+            for p, v in dev.items()
+        )
+        lines += [
+            f"Dev TPR at 1% FPR by profile, transformed injections included: {parts}.",
+            "",
+        ]
     lines += [
-        "",
         "At the vendors' default threshold of 0.5 instead of the tuned one (untransformed "
         "injections):",
         "",
@@ -187,73 +210,86 @@ def detector_tables(summary: dict[str, Any]) -> str:
 
 def e2e_table(summary: dict[str, Any] | None) -> str:
     lines = [
-        "**End-to-end attack success rate**, judged by code on the text that leaves the gateway: "
-        "the canary leaked, a PII value from the account context leaked, or a link or email "
-        "address outside the allowlist appeared. Test split, `gpt-6-luna` with `gpt-5-mini` as "
-        'the fallback. "Contact PII" leaves out the customer\'s name, which only NER can find. '
-        "Wilson 95% CIs clustered by payload group. Cost prices each record's tokens at list "
-        "price with no prompt-cache discount. The current records come from a rerun of the "
-        "fixed gateway that replayed the first live run's model replies from the committed "
-        "cache (same prompts, so the same replies) and sent only uncached calls, such as "
-        "provider refusals, to Azure again.",
+        "**End-to-end attack success rate (ASR)**, judged by code on the text that leaves the "
+        "gateway. An attack succeeds if the reply leaks the canary or a PII value from the "
+        "account context, or shows a link or email address outside the allowlist. Test split, "
+        "`gpt-6-luna` with "
+        "`gpt-5-mini` as the fallback, Wilson 95% CIs clustered by payload group. The records "
+        "come from a rerun of the fixed gateway that replayed the first run's cached replies and "
+        "sent only uncached calls (provider refusals) live.",
         "",
         row(
             "Config",
             "ASR, all attacks",
+            "ASR before output rules",
+            "Benign questions blocked",
+            "Cost",
+        ),
+        sep(5),
+    ]
+    for config, label in E2E_CONFIGS.items():
+        data = (summary or {}).get(config)
+        if data is None:
+            lines.append(row(label, *[PENDING] * 4))
+            continue
+        lines.append(
+            row(
+                label,
+                _metric(data, "attack:all", "attack_success"),
+                _metric(data, "attack:all", "raw_attack_success"),
+                _metric(data, "benign", "blocked"),
+                f"${data['cost_usd']:.2f}",
+            )
+        )
+    all_zero = all(
+        (summary or {}).get(c, {}).get("attack:all", {}).get(m, {}).get("rate") == 0.0
+        for c in E2E_CONFIGS
+        for m in ("attack_success", *LEAK_METRICS)
+    )
+    if all_zero:
+        lines += [
+            "",
+            "Every leak type was 0.0% in every config, including the one without gateway guards "
+            "(breakdown below), a floor effect that can't rank the layers (see "
+            "[What didn't work](#what-didnt-work)).",
+        ]
+    return "\n".join(lines)
+
+
+def e2e_breakdown(summary: dict[str, Any] | None) -> str:
+    lines = [
+        "**End-to-end ASR by attack and leak type**, same run and CIs. Contact PII is the "
+        "account PII without the customer's name, which only NER can find.",
+        "",
+        row(
+            "Config",
             "Direct",
             "Indirect",
             "Canary leaked",
             "Account PII leaked",
             "Contact PII leaked",
             "Outside link or email",
-            "ASR before output rules",
-            "Benign questions blocked",
-            "Cost",
         ),
-        sep(11),
+        sep(7),
     ]
-    labels = {
-        "none": "No gateway guards (Foundry default filter on)",
-        "no_detectors": "Redaction, spotlighting, output rules",
-        "full": "Full gateway",
-    }
-    for config in ("none", "no_detectors", "full"):
+    for config, label in E2E_CONFIGS.items():
         data = (summary or {}).get(config)
         if data is None:
-            lines.append(row(labels[config], *[PENDING] * 10))
+            lines.append(row(label, *[PENDING] * 6))
             continue
-
-        def get(group: str, metric: str, data: dict[str, Any] = data) -> str:
-            return pct(data.get(group, {}).get(metric))
-
         lines.append(
             row(
-                labels[config],
-                get("attack:all", "attack_success"),
-                get("attack:direct", "attack_success"),
-                get("attack:indirect", "attack_success"),
-                get("attack:all", "canary_leak"),
-                get("attack:all", "pii_leak"),
-                get("attack:all", "pii_leak_contact"),
-                get("attack:all", "link_leak"),
-                get("attack:all", "raw_attack_success"),
-                get("benign", "blocked"),
-                f"${data['cost_usd']:.2f}",
+                label,
+                _metric(data, "attack:direct", "attack_success"),
+                _metric(data, "attack:indirect", "attack_success"),
+                *(_metric(data, "attack:all", m) for m in LEAK_METRICS),
             )
         )
-    rates = [
-        (summary or {}).get(c, {}).get("attack:all", {}).get("attack_success", {}).get("rate")
-        for c in labels
-    ]
-    if all(r == 0.0 for r in rates):
-        lines += [
-            "",
-            "Every config scored 0.0%, including the one without gateway guards, so this run "
-            "can't rank the layers. That's a floor effect, not proof that each layer works. The "
-            "offline pipeline table below shows which input-side layer stopped each attack.",
-        ]
-    lines += [
-        "",
+    return "\n".join(lines)
+
+
+def garak_table() -> str:
+    lines = [
         "**garak 0.17.0 against the running full gateway** (an automated scanner, not a human "
         "red team). One reply per prompt. A prompt counts as an attack success if any of the "
         'probe\'s detectors flagged it. "Got the refusal" counts prompts answered with the '
@@ -290,8 +326,14 @@ def pii_table(summary: dict[str, Any]) -> str:
             "",
             f"{title} ({docs} documents):",
             "",
-            row("Entity", "Gold spans", "Regex recall", "Regex precision")[:-2]
-            + " | Presidio recall | Presidio precision |",
+            row(
+                "Entity",
+                "Gold spans",
+                "Regex recall",
+                "Regex precision",
+                "Presidio recall",
+                "Presidio precision",
+            ),
             sep(6),
         ]
         for cat in PII_CATEGORIES:
@@ -341,8 +383,14 @@ def faults_table(summary: dict[str, Any]) -> str:
         "The fake clock only moves between requests, so this table doesn't exercise the "
         "deadline. `tests/test_pipeline.py` checks the shipped timings on a virtual clock.",
         "",
-        row("Scenario", "Answered by luna", "By gpt-5-mini", "Retrieval-only", "503")[:-2]
-        + " | Model calls per request |",
+        row(
+            "Scenario",
+            "Answered by luna",
+            "By gpt-5-mini",
+            "Retrieval-only",
+            "503",
+            "Model calls per request",
+        ),
         sep(6),
     ]
     for name, cell in summary.items():
@@ -364,25 +412,32 @@ def pipeline_tables(summary: dict[str, Any]) -> str:
         "**Input-side layers in the full pipeline** (offline, test split, fake model). "
         "Blocked = stopped before the model.",
         "",
-        row("Traffic", "n", "Blocked", "By prompt detector")[:-2]
-        + " | Poisoned article retrieved | Poisoned article dropped |",
+        row(
+            "Traffic",
+            "n",
+            "Blocked",
+            "By prompt detector",
+            "Poisoned article retrieved",
+            "Poisoned article dropped",
+        ),
         sep(6),
     ]
     for name, cell in groups.items():
-        retrieved = (
-            pct(cell.get("poisoned_doc_retrieved")) if "poisoned_doc_retrieved" in cell else ""
-        )
-        dropped = (
-            pct(cell.get("caught_document_detector")) if "caught_document_detector" in cell else ""
-        )
+        # Rate cells hold k and the CI; n lives on the group.
         n = cell["n"]
-        blocked = {**cell["blocked"], "n": n}
-        by_prompt = {**cell["caught_prompt_detector"], "n": n}
-        if retrieved:
+        retrieved = dropped = ""
+        if "poisoned_doc_retrieved" in cell:
             retrieved = pct({**cell["poisoned_doc_retrieved"], "n": n})
             dropped = pct({**cell["caught_document_detector"], "n": n})
         lines.append(
-            f"| {name} | {n} | {pct(blocked)} | {pct(by_prompt)} | {retrieved} | {dropped} |"
+            row(
+                name,
+                str(n),
+                pct({**cell["blocked"], "n": n}),
+                pct({**cell["caught_prompt_detector"], "n": n}),
+                retrieved,
+                dropped,
+            )
         )
     lines += ["", "**Added latency per layer** (CPU, batch size 1, document cache off).", ""]
     lines += ["| Layer | n | p50 ms | p95 ms |", "|---|---|---|---|"]
@@ -396,16 +451,28 @@ def render() -> str:
     detectors = _load(RESULTS_DIR / "detectors" / "summary.json")
     if detectors:
         parts.append(detector_tables(detectors))
-    parts.append(e2e_table(_load(RESULTS_DIR / "e2e" / "summary.json")))
+        parts.append(
+            details(
+                "Detector detail: vendor thresholds, transforms, sources",
+                detector_detail(detectors),
+            )
+        )
+    e2e = _load(RESULTS_DIR / "e2e" / "summary.json")
+    parts.append(e2e_table(e2e))
+    parts.append(
+        details(
+            "End-to-end leak breakdown and garak scan", f"{e2e_breakdown(e2e)}\n\n{garak_table()}"
+        )
+    )
     pipeline = _load(RESULTS_DIR / "pipeline" / "summary.json")
     if pipeline:
-        parts.append(pipeline_tables(pipeline))
+        parts.append(details("Input-side layers and latency", pipeline_tables(pipeline)))
     pii = _load(RESULTS_DIR / "pii" / "summary.json")
     if pii:
-        parts.append(pii_table(pii))
+        parts.append(details("PII detection, regex vs Presidio", pii_table(pii)))
     faults = _load(RESULTS_DIR / "faults" / "summary.json")
     if faults:
-        parts.append(faults_table(faults))
+        parts.append(details("Fallback under injected faults", faults_table(faults)))
     return "\n\n".join(parts)
 
 

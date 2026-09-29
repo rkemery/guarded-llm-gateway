@@ -98,8 +98,11 @@ async def run_scenario(scenario: Scenario, questions: list[str], seed: int = 0) 
         stages[result.stage] += 1
         calls += result.model_calls
     n = len(questions)
-    out: dict[str, Any] = {"n": n, "model_calls_per_request": calls / n, "injected": {}}
-    out["injected"] = {"primary": primary.injected, "fallback": fallback.injected}
+    out: dict[str, Any] = {
+        "n": n,
+        "model_calls_per_request": calls / n,
+        "injected": {"primary": primary.injected, "fallback": fallback.injected},
+    }
     for stage in ("primary", "fallback", "retrieval_only", "503"):
         interval = rate([s == stage for s in _expand(stages, n)])
         out[stage] = {

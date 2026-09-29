@@ -92,6 +92,37 @@ def test_report_marks_live_rows_pending(monkeypatch, tmp_path) -> None:
     assert pct({"n": 10, "rate": 0.5, "low": 0.2, "high": 0.8}) == "50.0% (20.0 to 80.0)"
 
 
+def _table_cell_counts(text: str) -> list[tuple[int, int]]:
+    """(header cells, row cells) for every row of every markdown table in `text`."""
+    pairs, header = [], None
+    for line in text.splitlines():
+        if not line.startswith("|"):
+            header = None
+        elif header is None:
+            header = line.count("|")
+        elif not line.startswith("|---"):
+            pairs.append((header, line.count("|")))
+    return pairs
+
+
+def test_pending_e2e_rows_match_their_headers(monkeypatch, tmp_path) -> None:
+    from guarded_llm_gateway.eval import report
+
+    monkeypatch.setattr(report, "RESULTS_DIR", tmp_path)
+    visible = report.e2e_table(None)
+    pending = [line for line in visible.splitlines() if report.PENDING in line]
+    assert len(pending) == len(report.E2E_CONFIGS)
+    header = next(line for line in visible.splitlines() if line.startswith("| Config"))
+    assert all(line.count("|") == header.count("|") for line in pending)
+    pairs = _table_cell_counts(render())
+    assert pairs
+    assert all(h == r for h, r in pairs)
+
+
+def test_committed_results_render_even_tables() -> None:
+    assert all(h == r for h, r in _table_cell_counts(render()))
+
+
 def test_e2e_runner_records_and_summary(make_gateway, tmp_path) -> None:
     import json as _json
 

@@ -13,7 +13,7 @@ import math
 import re
 from collections import Counter
 from collections.abc import Iterable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 from guarded_llm_gateway.paths import TALLOWBROOK_DIR
@@ -156,3 +156,9 @@ class BM25Index:
 
 def default_index() -> BM25Index:
     return BM25Index(current_articles(load_articles()))
+
+
+def poisoned_index(articles: list[Article], carrier_id: str, body: str) -> BM25Index:
+    """An index over `articles` with the carrier article's body replaced by `body`."""
+    swapped = [replace(a, body=body) if a.article_id == carrier_id else a for a in articles]
+    return BM25Index(swapped)

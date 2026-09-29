@@ -118,8 +118,6 @@ class Settings:
     max_output_tokens: int = 500
     structured_outputs: bool = True
     redact_pii: bool = True
-    spotlight: bool = True
-    output_rules: bool = True
     dollar_cap_usd: float = 1.0
     cache_dir: str | None = None
     prompt_shields_endpoint: str | None = None
