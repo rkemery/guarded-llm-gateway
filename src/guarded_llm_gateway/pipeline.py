@@ -262,10 +262,15 @@ class Gateway:
     # ------------------------------------------------------------ model stage
 
     async def _call(
-        self, slot: ModelSlot, request: ModelRequest, result: GatewayResult
+        self, slot: ModelSlot, request: ModelRequest, result: GatewayResult, until: float
     ) -> ModelResponse:
+        """One model call with retries. Every attempt ends by `until` on the gateway clock."""
+
+        def retry(exc: Exception) -> bool:
+            return is_retryable(exc) and until - self._clock() > 0
+
         async for attempt in stamina.retry_context(
-            on=is_retryable,
+            on=retry,
             attempts=self.settings.retry_attempts,
             timeout=None,
             wait_initial=0.2,
@@ -275,8 +280,11 @@ class Gateway:
             with attempt:
                 if attempt.num > 1:
                     self.metrics.retries.labels(slot.name).inc()
+                timeout = min(self.settings.model_timeout_s, until - self._clock())
+                if timeout <= 0:
+                    raise TimeoutError(f"no time left for {slot.name}")
                 result.model_calls += 1
-                async with asyncio.timeout(self.settings.model_timeout_s):
+                async with asyncio.timeout(timeout):
                     response = await slot.backend.complete(request)
                 result.tokens_in += response.input_tokens
                 result.tokens_out += response.output_tokens
@@ -292,10 +300,11 @@ class Gateway:
         raise AssertionError("unreachable")  # pragma: no cover
 
     async def _ask(
-        self, slot: ModelSlot, system: str, user: str, result: GatewayResult
+        self, slot: ModelSlot, system: str, user: str, result: GatewayResult, until: float
     ) -> tuple[str, ModelAnswer]:
         messages = [{"role": "user", "content": user}]
-        response = await self._call(slot, self._request(slot.name, system, messages), result)
+        request = self._request(slot.name, system, messages)
+        response = await self._call(slot, request, result, until)
         try:
             return response.text, parse_answer(response.text)
         except SchemaError as exc:
@@ -304,7 +313,8 @@ class Gateway:
                 {"role": "assistant", "content": response.text},
                 {"role": "user", "content": REPAIR_PROMPT.format(error=exc)},
             ]
-            response = await self._call(slot, self._request(slot.name, system, repair), result)
+            request = self._request(slot.name, system, repair)
+            response = await self._call(slot, request, result, until)
             try:
                 answer = parse_answer(response.text)
             except SchemaError:
@@ -316,7 +326,12 @@ class Gateway:
     async def _model_stage(
         self, system: str, user: str, result: GatewayResult, timer: _Timer, deadline_at: float
     ) -> tuple[str, ModelAnswer] | None:
-        """Try each model in order. Returns None when every model failed or was skipped."""
+        """Try each model in order. Returns None when every model failed or was skipped.
+
+        While a later model could still run, a model gets at most the remaining time
+        minus a reserve of min(model timeout, half the remaining time), so a hung
+        primary and its retry can't use up the time the fallback needs.
+        """
         for position, slot in enumerate(self.models):
             started = time.perf_counter()
             if not slot.breaker.allow():
@@ -326,9 +341,15 @@ class Gateway:
             if remaining <= 0:
                 timer.add(f"model:{slot.name}", "skipped", started, "deadline")
                 break
+            later = [
+                s for s in self.models[position + 1 :] if s.breaker.state is not BreakerState.OPEN
+            ]
+            budget = remaining - (min(self.settings.model_timeout_s, remaining / 2) if later else 0)
             try:
-                async with asyncio.timeout(remaining):
-                    reply, answer = await self._ask(slot, system, user, result)
+                async with asyncio.timeout(budget):
+                    reply, answer = await self._ask(
+                        slot, system, user, result, self._clock() + budget
+                    )
             except Exception as exc:
                 # A provider refusal ends the request: the model is up, so it is not a
                 # breaker failure, and sending the refused prompt to the next model would

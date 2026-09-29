@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import selectors
 from dataclasses import replace
 
 import pytest
@@ -9,6 +10,7 @@ import stamina
 from llm_eval_harness import ModelRequest, ModelResponse
 
 from guarded_llm_gateway.backends import FakeModel, FaultyModel, TransientModelError
+from guarded_llm_gateway.config import Settings
 from guarded_llm_gateway.pipeline import REFUSAL, GuardConfig, Unavailable, normalize_input
 from guarded_llm_gateway.reliability import BreakerState, BudgetExceeded, TokenBudget
 
@@ -129,6 +131,68 @@ def test_hung_model_times_out_and_falls_back(make_gateway, settings) -> None:
     )
     result = run(gateway.handle("How do I freeze my card?"))
     assert result.model == "gpt-5-mini"
+
+
+class VirtualClock:
+    """Event-loop time that jumps to the next timer instead of sleeping."""
+
+    def __init__(self) -> None:
+        self.now = 0.0
+
+    def __call__(self) -> float:
+        return self.now
+
+
+class _JumpingSelector(selectors.DefaultSelector):
+    def __init__(self, clock: VirtualClock) -> None:
+        super().__init__()
+        self._clock = clock
+
+    def select(self, timeout: float | None = None):  # type: ignore[override]
+        events = super().select(0)
+        if not events and timeout:
+            self._clock.now += timeout
+        return events
+
+
+def run_on_virtual_clock(coro, clock: VirtualClock):
+    """Run `coro` on a loop whose clock is `clock`, so asyncio timeouts and sleeps use it too."""
+
+    def factory() -> asyncio.AbstractEventLoop:
+        loop = asyncio.SelectorEventLoop(_JumpingSelector(clock))
+        loop.time = clock  # type: ignore[method-assign]
+        return loop
+
+    with asyncio.Runner(loop_factory=factory) as runner:
+        return runner.run(coro)
+
+
+def test_hung_primary_leaves_time_for_the_fallback_at_shipped_defaults(
+    make_gateway, settings
+) -> None:
+    # Shipped timings: 20 s deadline, 12 s per call, 2 attempts. Two full attempts on a
+    # hung primary would take 24 s. The virtual clock makes the hang cost no wall time.
+    shipped = Settings()
+    timing = replace(
+        settings,
+        deadline_s=shipped.deadline_s,
+        model_timeout_s=shipped.model_timeout_s,
+        retry_attempts=shipped.retry_attempts,
+    )
+
+    class Hung:
+        async def complete(self, request: ModelRequest) -> ModelResponse:
+            await asyncio.sleep(3600)
+            raise AssertionError("unreachable")
+
+    clock = VirtualClock()
+    gateway = make_gateway(models=[Hung(), FakeModel()], settings=timing, clock=clock)
+    result = run_on_virtual_clock(gateway.handle("How do I freeze my card?"), clock)
+    assert result.model == "gpt-5-mini"
+    assert result.stage == "fallback"
+    assert 0 < clock.now < shipped.deadline_s
+    primary = next(e for e in result.layers if e.layer == "model:gpt-6-luna")
+    assert primary.action == "failed"
 
 
 def test_overall_deadline_raises_unavailable(make_gateway, settings) -> None:
